@@ -1,0 +1,122 @@
+{% extends 'base.html' %}
+
+{% block title %}{% if booking %}Modifier la reservation{% else %}Nouvelle reservation{% endif %} | SRIS{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="h3 mb-1">{% if booking %}Modifier la reservation{% else %}Nouvelle reservation{% endif %}</h1>
+        <p class="text-muted mb-0">Workflow EMSI: demande, validation admin, notification, puis suivi dans le calendrier central.</p>
+    </div>
+    <a href="{% url 'booking_calendar' %}" class="btn btn-outline-primary">Calendrier</a>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-body">
+                <form method="post" novalidate>
+                    {% csrf_token %}
+                    
+                    {% if form.non_field_errors %}
+                    <div class="alert alert-danger mb-4">
+                        <ul class="mb-0">
+                            {% for error in form.non_field_errors %}
+                            <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    {% endif %}
+
+                    <div class="row g-3">
+                        {% for field in form %}
+                        <div class="{% if field.name == 'purpose' %}col-12{% else %}col-md-6{% endif %}">
+                            <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                            {{ field }}
+                            {{ field.errors }}
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <div class="mt-4 d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">{% if booking %}Enregistrer les modifications{% else %}Creer la reservation{% endif %}</button>
+                        <a href="{% url 'booking_list' %}" class="btn btn-outline-secondary">Annuler</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-body">
+                <h2 class="h5 mb-3">Aide a la decision</h2>
+                <p class="small text-muted">Choisissez une salle adaptee a votre activite et au nombre de participants avant de soumettre la demande.</p>
+                <div class="vstack gap-3">
+                    <div>
+                        <label class="form-label" for="checkRoom">Salle</label>
+                        <select class="form-select" id="checkRoom">
+                            <option value="">Selectionnez une salle</option>
+                            {% for room in rooms %}
+                            <option value="{{ room.id }}">{{ room.code }} - {{ room.get_room_type_display }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div>
+                        <label class="form-label" for="checkDate">Date</label>
+                        <input type="date" class="form-control" id="checkDate" min="{{ today }}">
+                    </div>
+                    <button type="button" class="btn btn-outline-primary" onclick="checkAvailability()">Verifier</button>
+                </div>
+                <div id="availabilityResult" class="mt-3 small"></div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function checkAvailability() {
+    const roomId = document.getElementById('checkRoom').value;
+    const date = document.getElementById('checkDate').value;
+    const resultDiv = document.getElementById('availabilityResult');
+
+    if (!roomId || !date) {
+        resultDiv.innerHTML = '<div class="alert alert-warning mb-0">Selectionnez une salle et une date.</div>';
+        return;
+    }
+
+    resultDiv.innerHTML = '<div class="text-muted">Chargement...</div>';
+
+    fetch(`/ajax/bookings/check-availability/?room=${roomId}&date=${date}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                resultDiv.innerHTML = `<div class="alert alert-danger mb-0">${data.error}</div>`;
+                return;
+            }
+
+            if (!data.bookings || data.bookings.length === 0) {
+                resultDiv.innerHTML = '<div class="alert alert-success mb-0">Aucune reservation sur cette date.</div>';
+                return;
+            }
+
+            let html = `<div class="alert alert-info mb-2">${data.room.code} - ${data.room.room_type}</div><ul class="list-group">`;
+            data.bookings.forEach(booking => {
+                html += `<li class="list-group-item">${booking.start_time} - ${booking.end_time} | ${booking.user__username} | ${booking.status}</li>`;
+            });
+            html += '</ul>';
+            if (data.availability && data.availability.length > 0) {
+                html += '<div class="alert alert-success mt-3 mb-2">Creneaux libres :</div><ul class="list-group">';
+                data.availability.forEach(slot => {
+                    html += `<li class="list-group-item">${slot.start} - ${slot.end}</li>`;
+                });
+                html += '</ul>';
+            }
+            resultDiv.innerHTML = html;
+        })
+        .catch(() => {
+            resultDiv.innerHTML = '<div class="alert alert-danger mb-0">Erreur lors du chargement.</div>';
+        });
+}
+</script>
+{% endblock %}

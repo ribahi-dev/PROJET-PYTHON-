@@ -1,0 +1,139 @@
+{% extends 'base.html' %}
+
+{% block title %}Calendrier | SRIS{% endblock %}
+
+{% block extra_css %}
+<style>
+    #calendar {
+        min-height: 720px;
+    }
+
+    .legend-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 999px;
+        display: inline-block;
+    }
+
+    .fc-event-en_attente {
+        background: #fff3cd;
+        border-color: #f0c36d;
+        color: #664d03;
+    }
+
+    .fc-event-confirmee {
+        background: #d1e7dd;
+        border-color: #75b798;
+        color: #0f5132;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="h3 mb-1">Calendrier des reservations</h1>
+        <p class="text-muted mb-0">Visualisez les creneaux occupes et creez rapidement une reservation.</p>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-md-5">
+                <label class="form-label" for="calendarRoom">Salle</label>
+                <select class="form-select" id="calendarRoom">
+                    <option value="">Toutes les salles</option>
+                    {% for room in rooms %}
+                    <option value="{{ room.id }}">{{ room.code }} - {{ room.get_room_type_display }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-5">
+                <label class="form-label" for="calendarStatus">Statut</label>
+                <select class="form-select" id="calendarStatus">
+                    <option value="">Tous les statuts</option>
+                    <option value="EN_ATTENTE">En attente</option>
+                    <option value="CONFIRMEE">Confirmee</option>
+                </select>
+            </div>
+            <div class="col-md-2 d-flex align-items-end">
+                <button class="btn btn-primary w-100" type="button" onclick="refetchEvents()">Appliquer</button>
+            </div>
+        </div>
+        <div class="d-flex flex-wrap gap-3 mt-3 small text-muted">
+            <span><span class="legend-dot" style="background:#fff3cd;"></span> Demande en attente</span>
+            <span><span class="legend-dot" style="background:#d1e7dd;"></span> Reservation approuvee</span>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <div id="calendar"></div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let calendar;
+
+document.addEventListener('DOMContentLoaded', function () {
+    calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
+        initialView: 'timeGridWeek',
+        firstDay: 1,
+        locale: 'fr',
+        slotMinTime: '08:00:00',
+        slotMaxTime: '19:00:00',
+        allDaySlot: false,
+        headerToolbar: {
+            left: 'prev,next today',
+            center: 'title',
+            right: 'dayGridMonth,timeGridWeek,timeGridDay'
+        },
+        selectable: true,
+        events: loadEvents,
+        select: function(info) {
+            const params = new URLSearchParams({
+                date: info.startStr.split('T')[0],
+                start: info.startStr.split('T')[1].slice(0, 5),
+                end: info.endStr.split('T')[1].slice(0, 5),
+            });
+            const room = document.getElementById('calendarRoom').value;
+            if (room) params.set('room', room);
+            window.location.href = `{% url 'booking_create' %}?${params.toString()}`;
+        },
+        eventClick: function(info) {
+            window.location.href = `/bookings/${info.event.id}/`;
+        }
+    });
+
+    calendar.render();
+});
+
+function loadEvents(fetchInfo, successCallback, failureCallback) {
+    const roomId = document.getElementById('calendarRoom').value;
+    const status = document.getElementById('calendarStatus').value;
+    const params = new URLSearchParams();
+    if (roomId) params.set('room', roomId);
+    if (status) params.set('status', status);
+
+    fetch(`/ajax/bookings/calendar/?${params.toString()}`)
+        .then(response => response.json())
+        .then(events => {
+            successCallback(events.map(event => ({
+                ...event,
+                className: [`fc-event-${event.status.toLowerCase()}`]
+            })));
+        })
+        .catch(failureCallback);
+}
+
+function refetchEvents() {
+    if (calendar) {
+        calendar.refetchEvents();
+    }
+}
+</script>
+{% endblock %}

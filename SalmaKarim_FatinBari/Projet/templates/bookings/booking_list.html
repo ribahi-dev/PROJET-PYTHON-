@@ -1,0 +1,107 @@
+{% extends 'base.html' %}
+
+{% block title %}Reservations | SRIS{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="h3 mb-1">Reservations</h1>
+        <p class="text-muted mb-0">{% if user.is_staff %}Supervision de toutes les reservations{% else %}Suivi de vos reservations{% endif %}</p>
+    </div>
+    <a href="{% url 'booking_create' %}" class="btn btn-primary">Nouvelle reservation</a>
+</div>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-3">
+                <label class="form-label" for="status">Statut</label>
+                <select class="form-select" id="status" name="status">
+                    <option value="">Tous</option>
+                    <option value="EN_ATTENTE" {% if request.GET.status == 'EN_ATTENTE' %}selected{% endif %}>En attente</option>
+                    <option value="CONFIRMEE" {% if request.GET.status == 'CONFIRMEE' %}selected{% endif %}>Confirmee</option>
+                    <option value="REFUSEE" {% if request.GET.status == 'REFUSEE' %}selected{% endif %}>Refusee</option>
+                    <option value="ANNULEE" {% if request.GET.status == 'ANNULEE' %}selected{% endif %}>Annulee</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label" for="date">Date</label>
+                <input class="form-control" type="date" id="date" name="date" value="{{ request.GET.date|default:'' }}">
+            </div>
+            <div class="col-md-4">
+                    <label class="form-label" for="room">Salle</label>
+                    <select class="form-select" id="room" name="room">
+                        <option value="">Toutes les salles</option>
+                        {% for room in rooms %}
+                        <option value="{{ room.id }}" {% if request.GET.room == room.id|stringformat:'s' %}selected{% endif %}>{{ room.code }} - {{ room.get_room_type_display }}</option>
+                        {% endfor %}
+                    </select>
+            </div>
+            <div class="col-md-2 d-flex align-items-end">
+                <button class="btn btn-outline-primary w-100" type="submit">Filtrer</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table align-middle">
+                <thead>
+                    <tr>
+                        <th>Salle</th>
+                        <th>Date</th>
+                        <th>Horaire</th>
+                        <th>Activite</th>
+                        <th>Motif</th>
+                        <th>Statut</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for booking in bookings %}
+                    <tr>
+                        <td>
+                            <div class="fw-semibold">{{ booking.room.code }}</div>
+                            <div class="small text-muted">{{ booking.room.get_room_type_display }}</div>
+                        </td>
+                        <td>{{ booking.date }}</td>
+                        <td>{{ booking.start_time }} - {{ booking.end_time }}</td>
+                        <td>{{ booking.get_activity_type_display }}<div class="small text-muted">{{ booking.attendees_count }} participants</div></td>
+                        <td>{{ booking.purpose|truncatewords:10 }}</td>
+                        <td><span class="status-badge status-{{ booking.status|lower }}">{{ booking.get_status_display }}</span></td>
+                        <td class="text-end">
+                            <div class="d-inline-flex gap-2 flex-wrap justify-content-end">
+                                <a href="{% url 'booking_detail' booking.id %}" class="btn btn-sm btn-outline-primary">Voir</a>
+                                {% if booking.status == 'EN_ATTENTE' and user.is_staff %}
+                                <form method="post" action="{% url 'booking_confirm' booking.id %}">
+                                    {% csrf_token %}
+                                    <button class="btn btn-sm btn-outline-success" type="submit">Confirmer</button>
+                                </form>
+                                <form method="post" action="{% url 'booking_reject' booking.id %}">
+                                    {% csrf_token %}
+                                    <button class="btn btn-sm btn-outline-danger" type="submit">Refuser</button>
+                                </form>
+                                {% endif %}
+                                {% if booking.status != 'ANNULEE' and booking.status != 'REFUSEE' %}
+                                {% if booking.user == user or user.is_staff %}
+                                <a href="{% url 'booking_update' booking.id %}" class="btn btn-sm btn-outline-secondary">Modifier</a>
+                                <form method="post" action="{% url 'booking_cancel' booking.id %}">
+                                    {% csrf_token %}
+                                    <button class="btn btn-sm btn-outline-danger" type="submit" onclick="return confirm('Annuler cette reservation ?');">Annuler</button>
+                                </form>
+                                {% endif %}
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="7" class="text-center text-muted py-5">Aucune reservation trouvee.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+
+{% block title %}{% if room %}Modifier la salle{% else %}Nouvelle salle{% endif %} | EMSI Booking{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="h3 mb-1">{% if room %}Modifier la salle{% else %}Ajouter une salle{% endif %}</h1>
+        <p class="text-muted mb-0">Configuration des espaces EMSI.</p>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <form method="post" novalidate>
+            {% csrf_token %}
+            <div class="row g-3">
+                {% for field in form %}
+                <div class="{% if field.name == 'description' or field.name == 'equipment' or field.name == 'is_active' %}col-12{% else %}col-md-6{% endif %}">
+                    {% if field.name == 'is_active' %}
+                    <div class="form-check mt-4">
+                        {{ field }}
+                        <label class="form-check-label" for="{{ field.id_for_label }}">Salle active</label>
+                    </div>
+                    {% else %}
+                    <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.help_text %}<div class="form-text">{{ field.help_text }}</div>{% endif %}
+                    {% endif %}
+                    {{ field.errors }}
+                </div>
+                {% endfor %}
+            </div>
+            <div class="mt-4 d-flex gap-2">
+                <button type="submit" class="btn btn-primary">{% if room %}Mettre a jour{% else %}Creer{% endif %}</button>
+                <a href="{% url 'room_list' %}" class="btn btn-outline-secondary">Annuler</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,119 @@
+{% extends 'base.html' %}
+
+{% block title %}Salles EMSI | EMSI Booking{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="h3 mb-1">Salles EMSI</h1>
+        <p class="text-muted mb-0">5 etages, 8 salles SC et 2 laboratoires LI par etage, plus 2 espaces conference premium.</p>
+    </div>
+    {% if user.is_staff %}
+    <a href="{% url 'room_create' %}" class="btn btn-primary">Ajouter une salle</a>
+    {% endif %}
+</div>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-3">
+                <label class="form-label" for="search">Recherche</label>
+                <input class="form-control" type="text" id="search" name="search" value="{{ request.GET.search|default:'' }}" placeholder="SC201, conference, TP...">
+            </div>
+            <div class="col-md-2">
+                <label class="form-label" for="floor">Etage</label>
+                <select class="form-select" id="floor" name="floor">
+                    <option value="">Tous</option>
+                    {% for floor in floors %}
+                    <option value="{{ floor }}" {% if request.GET.floor == floor|stringformat:'s' %}selected{% endif %}>Etage {{ floor }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label" for="room_type">Type</label>
+                <select class="form-select" id="room_type" name="room_type">
+                    <option value="">Tous</option>
+                    {% for value, label in room_type_choices %}
+                    <option value="{{ value }}" {% if request.GET.room_type == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label" for="capacity">Capacite min</label>
+                <input class="form-control" type="number" id="capacity" name="capacity" value="{{ request.GET.capacity|default:'' }}">
+            </div>
+            <div class="col-md-2 d-flex align-items-end">
+                <button class="btn btn-outline-primary w-100" type="submit">Filtrer</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="row g-4">
+    {% for room in rooms %}
+    <div class="col-md-6 col-xl-4">
+        <div class="card h-100">
+            <div class="card-body d-flex flex-column">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <div>
+                        <h2 class="h5 mb-1">{{ room.code }}</h2>
+                        <p class="text-muted small mb-0">{{ room.get_room_type_display }} - {{ room.floor_label }}</p>
+                    </div>
+                    <span class="badge text-bg-light border">{{ room.capacity }} places</span>
+                </div>
+                <p class="small mb-2"><strong>Nom :</strong> {{ room.display_name }}</p>
+                <p class="text-muted small mb-3">{{ room.description|default:'Aucune description'|truncatewords:16 }}</p>
+                <div class="d-flex flex-wrap gap-2 mb-4">
+                    {% for item in room.equipment_items %}
+                    <span class="badge text-bg-light border">{{ item }}</span>
+                    {% empty %}
+                    <span class="text-muted small">Aucun equipement renseigne</span>
+                    {% endfor %}
+                </div>
+                <div class="mt-auto d-flex gap-2">
+                    <a href="{% url 'room_detail' room.id %}" class="btn btn-primary btn-sm">Details</a>
+                    <a href="{% url 'booking_create' %}?room={{ room.id }}" class="btn btn-outline-primary btn-sm">Reserver</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body text-center text-muted py-5">Aucune salle ne correspond a votre recherche.</div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+{% if floors_summary %}
+<div class="card mt-4">
+    <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h2 class="h5 mb-0">Lecture par etage</h2>
+            <span class="badge text-bg-light border">{{ floors_summary|length }} etages visibles</span>
+        </div>
+        <div class="row g-3">
+            {% for level in floors_summary %}
+            <div class="col-lg-6">
+                <div class="border rounded p-3 h-100">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <div class="fw-semibold">Etage {{ level.floor }}</div>
+                        <span class="badge text-bg-light border">{{ level.rooms_count }} salles</span>
+                    </div>
+                    <div class="small text-muted mb-3">
+                        {{ level.classrooms_count }} salles de cours, {{ level.labs_count }} labos{% if level.conferences_count %}, {{ level.conferences_count }} conference{% endif %}
+                    </div>
+                    <div class="d-flex flex-wrap gap-2">
+                        {% for room in level.rooms %}
+                        <a href="{% url 'room_detail' room.id %}" class="badge text-bg-light border text-decoration-none">{{ room.code }}</a>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
