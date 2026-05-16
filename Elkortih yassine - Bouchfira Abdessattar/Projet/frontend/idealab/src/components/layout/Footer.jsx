@@ -1,0 +1,2 @@
+import { Link } from 'react-router-dom'
+export default function Footer() { return <footer className='mt-12 border-t border-secondary/30 bg-primary/90 py-6'><div className='mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-4 text-sm text-secondary'><p className='font-medium'>IdeaLab (c) 2025</p><div className='flex gap-4'><Link className='hover:opacity-75' to='/about'>About</Link><Link className='hover:opacity-75' to='/explore'>Explore</Link><Link className='hover:opacity-75' to='/contact'>Contact</Link></div></div></footer> }

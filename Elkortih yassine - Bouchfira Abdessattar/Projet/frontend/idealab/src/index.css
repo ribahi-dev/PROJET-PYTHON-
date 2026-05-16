@@ -1,0 +1,169 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+@import url('https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@400,500,700,800,900&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── CSS variable reset: map every Tailwind/shadcn var to our 2 colors ── */
+:root {
+  --background: #BBCAE1;
+  --foreground: #681A15;
+  --card: #BBCAE1;
+  --card-foreground: #681A15;
+  --popover: #BBCAE1;
+  --popover-foreground: #681A15;
+  --primary: #681A15;
+  --primary-foreground: #BBCAE1;
+  --secondary: #BBCAE1;
+  --secondary-foreground: #681A15;
+  --muted: #BBCAE1;
+  --muted-foreground: #681A15;
+  --accent: #681A15;
+  --accent-foreground: #BBCAE1;
+  --destructive: #681A15;
+  --destructive-foreground: #BBCAE1;
+  --border: rgba(104,26,21,0.3);
+  --input: rgba(104,26,21,0.3);
+  --ring: #681A15;
+  --radius: 0.5rem;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  @apply bg-primary text-secondary font-sans antialiased;
+}
+
+#root {
+  @apply min-h-screen;
+}
+
+@layer base {
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-display tracking-tight;
+    letter-spacing: -0.02em;
+  }
+
+  * {
+  }
+
+  /* Kill every non-brand background */
+  [class*="bg-white"],
+  [class*="bg-slate-"],
+  [class*="bg-gray-"],
+  [class*="bg-zinc-"],
+  [class*="bg-neutral-"],
+  [class*="bg-stone-"],
+  [class*="bg-blue-"],
+  [class*="bg-indigo-"],
+  [class*="bg-violet-"],
+  [class*="bg-sky-"],
+  [class*="bg-cyan-"],
+  [class*="bg-teal-"],
+  [class*="bg-black"] {
+    background-color: #BBCAE1 !important;
+  }
+
+  /* Dark shades → secondary */
+  [class*="bg-slate-8"],
+  [class*="bg-slate-9"],
+  [class*="bg-gray-8"],
+  [class*="bg-gray-9"],
+  [class*="bg-zinc-8"],
+  [class*="bg-zinc-9"],
+  [class*="bg-neutral-8"],
+  [class*="bg-neutral-9"],
+  [class*="bg-blue-8"],
+  [class*="bg-blue-9"],
+  [class*="bg-indigo-8"],
+  [class*="bg-indigo-9"],
+  [class*="bg-black"] {
+    background-color: #681A15 !important;
+  }
+
+  /* Kill every non-brand text color */
+  [class*="text-slate-"],
+  [class*="text-gray-"],
+  [class*="text-zinc-"],
+  [class*="text-neutral-"],
+  [class*="text-blue-"],
+  [class*="text-indigo-"],
+  [class*="text-violet-"],
+  [class*="text-sky-"],
+  [class*="text-cyan-"],
+  [class*="text-black"],
+  [class*="text-white"] {
+    color: #681A15 !important;
+  }
+
+  /* Kill every non-brand border color */
+  [class*="border-slate-"],
+  [class*="border-gray-"],
+  [class*="border-zinc-"],
+  [class*="border-blue-"],
+  [class*="border-indigo-"] {
+    border-color: rgba(104,26,21,0.3) !important;
+  }
+
+  /* Bare border class → brand border */
+  .border {
+    border-color: rgba(104,26,21,0.3);
+  }
+
+  /* Focus ring → brand */
+  *:focus-visible {
+    outline-color: #681A15 !important;
+    ring-color: #681A15 !important;
+  }
+}
+
+@layer components {
+  .input-premium {
+    @apply w-full rounded-xl border border-secondary/25 bg-primary px-4 py-2.5 text-sm text-secondary placeholder:text-secondary/35 transition-all duration-200 outline-none;
+    &:focus {
+      @apply border-secondary/60 shadow-[0_0_0_3px_rgba(104,26,21,0.08)];
+    }
+  }
+}
+
+@layer utilities {
+  /* GSAP Flip — feature card states */
+  .feature-expanded {
+    grid-column: span 2;
+    grid-row: span 2;
+  }
+  .feature-collapsed {
+    opacity: 0.45;
+    filter: blur(1px);
+  }
+  .font-display {
+    font-family: 'Cabinet Grotesk', 'Inter', sans-serif;
+  }
+
+  .transition-premium {
+    transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  /* Premium interactions */
+  a, button, [role='button'] {
+    transition: transform 300ms cubic-bezier(0.22, 1, 0.36, 1), opacity 300ms cubic-bezier(0.22, 1, 0.36, 1), box-shadow 300ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  a:hover, button:hover, [role='button']:hover {
+    transform: translateY(-1px);
+  }
+
+  main section {
+    animation: sectionEnter 700ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  main section:nth-of-type(2) { animation-delay: 80ms; }
+  main section:nth-of-type(3) { animation-delay: 140ms; }
+  main section:nth-of-type(4) { animation-delay: 200ms; }
+}
+
+@keyframes sectionEnter {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: translateY(0); }
+}

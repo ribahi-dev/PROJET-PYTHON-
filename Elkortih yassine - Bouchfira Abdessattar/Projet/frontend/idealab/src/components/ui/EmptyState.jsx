@@ -1,0 +1,2 @@
+import Button from './Button'
+export default function EmptyState({ icon:Icon,title,description,actionLabel,onAction }){ return <div className='flex flex-col items-center justify-center rounded-xl border border-dashed border-slate-300 bg-white p-8 text-center'>{Icon&&<Icon className='mb-3 text-slate-400' size={36}/>}<h3 className='text-lg font-semibold text-primary'>{title}</h3><p className='mt-1 text-sm text-slate-500'>{description}</p>{actionLabel&&onAction&&<Button className='mt-4' onClick={onAction}>{actionLabel}</Button>}</div>}
