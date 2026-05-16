@@ -1,0 +1,256 @@
+{% extends 'base.html' %}
+
+{% block title %}Nouvelle Réservation - Club Équitation & Balades en Mer{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-plus me-2"></i>
+                    Créer une nouvelle réservation
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    {% if form.non_field_errors %}
+                        <div class="alert alert-danger">
+                            {% for error in form.non_field_errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.activite.id_for_label }}" class="form-label">
+                            <i class="fas fa-horse me-1"></i>Activité
+                        </label>
+                        {{ form.activite }}
+                        {% if form.activite.errors %}
+                            <div class="text-danger small mt-1">
+                                {% for error in form.activite.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <small class="text-muted">Choisissez l'activité que vous souhaitez réserver.</small>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="{{ form.date_reservation.id_for_label }}" class="form-label">
+                                    <i class="fas fa-calendar me-1"></i>Date de réservation
+                                </label>
+                                {{ form.date_reservation }}
+                                {% if form.date_reservation.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {% for error in form.date_reservation.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                                <small class="text-muted">Sélectionnez la date souhaitée.</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="{{ form.nombre_personnes.id_for_label }}" class="form-label">
+                                    <i class="fas fa-users me-1"></i>Nombre de participants
+                                </label>
+                                {{ form.nombre_personnes }}
+                                {% if form.nombre_personnes.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {% for error in form.nombre_personnes.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                                <small class="text-muted">Combien de personnes participeront ?</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Récapitulatif dynamique -->
+                    <div id="recapitulatif" class="alert alert-info" style="display: none;">
+                        <h6><i class="fas fa-info-circle me-2"></i>Récapitulatif de la réservation</h6>
+                        <div id="recap-content"></div>
+                    </div>
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{% url 'reservations:reservation-list' %}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>Annuler
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-check me-2"></i>Confirmer la réservation
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <!-- Informations complémentaires -->
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h6 class="mb-0">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Informations utiles
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <h6>Conditions de réservation</h6>
+                    <ul class="small">
+                        <li>Réservation possible jusqu'à 24h avant l'activité</li>
+                        <li>Annulation gratuite jusqu'à 48h avant</li>
+                        <li>Paiement sur place le jour de l'activité</li>
+                    </ul>
+                </div>
+                
+                <div class="mb-3">
+                    <h6>Disponibilités</h6>
+                    <p class="small">Les activités sont disponibles tous les jours sauf jours fériés.</p>
+                </div>
+                
+                <div class="mb-3">
+                    <h6>Contact</h6>
+                    <p class="small">Pour toute question: <br>+33 1 23 45 67 89</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Activités disponibles -->
+        <div class="card mt-4">
+            <div class="card-header bg-light">
+                <h6 class="mb-0">
+                    <i class="fas fa-list me-2"></i>
+                    Activités disponibles
+                </h6>
+            </div>
+            <div class="card-body">
+                {% for activite in activites %}
+                    <div class="d-flex justify-content-between align-items-center mb-2 pb-2 border-bottom">
+                        <div>
+                            <strong>{{ activite.nom }}</strong><br>
+                            <small class="text-muted">{{ activite.duree }} - {{ activite.prix }} DH</small>
+                        </div>
+                        {% if activite.categorie == 'equitation' %}
+                            <span class="badge" style="background:#1a2744">
+                        {% elif activite.categorie == 'mer' %}
+                            <span class="badge" style="background:#0891b2">
+                        {% else %}
+                            <span class="badge" style="background:#2d6a1f">
+                        {% endif %}
+                            {{ activite.get_categorie_display }}
+                        </span>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+select.form-select {
+    cursor: pointer;
+}
+
+.form-control:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.1);
+}
+
+.alert-info {
+    border-left: 4px solid #0dcaf0;
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const activiteSelect = document.getElementById('id_activite');
+    const dateInput = document.getElementById('id_date_reservation');
+    const personnesInput = document.getElementById('id_nombre_personnes');
+    const recapDiv = document.getElementById('recapitulatif');
+    const recapContent = document.getElementById('recap-content');
+    
+    // Configuration des champs
+    const today = new Date().toISOString().split('T')[0];
+    dateInput.setAttribute('min', today);
+    
+    const maxDate = new Date();
+    maxDate.setMonth(maxDate.getMonth() + 3);
+    dateInput.setAttribute('max', maxDate.toISOString().split('T')[0]);
+    
+    // Données des activités
+    const activites = {
+        {% for activite in activites %}
+        '{{ activite.pk }}': {
+            nom: '{{ activite.nom|escapejs }}',
+            prix: {{ activite.prix }},
+            duree: '{{ activite.duree|escapejs }}',
+            categorie: '{{ activite.get_categorie_display|escapejs }}',
+            places_max: {{ activite.places_max }}
+        }{% if not forloop.last %},{% endif %}
+        {% endfor %}
+    };
+    
+    function updateRecapitulatif() {
+        const activiteId = activiteSelect.value;
+        const date = dateInput.value;
+        const personnes = personnesInput.value;
+        
+        if (activiteId && date && personnes) {
+            const activite = activites[activiteId];
+            const total = activite.prix * personnes;
+            
+            recapContent.innerHTML = `
+                <div class="row">
+                    <div class="col-md-6">
+                        <strong>Activité:</strong> ${activite.nom}<br>
+                        <strong>Catégorie:</strong> ${activite.categorie}<br>
+                        <strong>Durée:</strong> ${activite.duree}
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Date:</strong> ${new Date(date).toLocaleDateString('fr-FR')}<br>
+                        <strong>Participants:</strong> ${personnes}<br>
+                        <strong>Total:</strong> <span class="text-success fw-bold">${total} DH</span>
+                    </div>
+                </div>
+            `;
+            
+            recapDiv.style.display = 'block';
+        } else {
+            recapDiv.style.display = 'none';
+        }
+    }
+    
+    // Validation du nombre de participants
+    personnesInput.addEventListener('input', function() {
+        const activiteId = activiteSelect.value;
+        if (activiteId && this.value) {
+            const activite = activites[activiteId];
+            if (parseInt(this.value) > activite.places_max) {
+                this.value = activite.places_max;
+            }
+        }
+        updateRecapitulatif();
+    });
+    
+    // Écouteurs d'événements
+    activiteSelect.addEventListener('change', updateRecapitulatif);
+    dateInput.addEventListener('change', updateRecapitulatif);
+    
+    // Auto-focus
+    activiteSelect.focus();
+});
+</script>
+{% endblock %}

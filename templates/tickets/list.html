@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block title %}Mes Tickets{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+
+  <h2 class="mb-4">🎫 Mes Tickets</h2>
+
+  {% if tickets %}
+    <div class="row">
+      {% for ticket in tickets %}
+      <div class="col-md-6 mb-4">
+        <div class="card shadow-sm">
+
+          <div class="card-header fw-bold text-white"
+               style="background:#1a2744;">
+            🐴 {{ ticket.reservation.activite.nom }}
+          </div>
+
+          <div class="card-body">
+            <p>
+              <strong>🎟️ Code :</strong>
+              <span class="badge bg-dark fs-6">
+                {{ ticket.code }}
+              </span>
+            </p>
+            <p>
+              <strong>📅 Date :</strong>
+              {{ ticket.reservation.date_reservation }}
+            </p>
+            <p>
+              <strong>👥 Personnes :</strong>
+              {{ ticket.reservation.nombre_personnes }}
+            </p>
+            <p>
+              <strong>💰 Prix :</strong>
+              {{ ticket.reservation.activite.prix }} DH
+            </p>
+            <p>
+              <strong>📌 Statut :</strong>
+              {% if ticket.statut == 'valide' %}
+                <span class="badge bg-success">✅ Valide</span>
+              {% elif ticket.statut == 'utilise' %}
+                <span class="badge bg-secondary">Utilisé</span>
+              {% else %}
+                <span class="badge bg-danger">Expiré</span>
+              {% endif %}
+            </p>
+          </div>
+
+          <div class="card-footer text-muted small">
+            Créé le {{ ticket.created_at|date:"d/m/Y à H:i" }}
+          </div>
+
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+  {% else %}
+    <div class="alert alert-info text-center p-5">
+      <h5>🎫 Aucun ticket pour le moment.</h5>
+      <p>Réservez une activité pour obtenir votre ticket.</p>
+      <a href="{% url 'activities:activite-list' %}"
+         class="btn btn-primary mt-2">
+        🐴 Voir les activités
+      </a>
+    </div>
+  {% endif %}
+
+</div>
+{% endblock %}

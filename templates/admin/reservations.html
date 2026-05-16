@@ -1,0 +1,127 @@
+{% extends 'admin/base.html' %}
+
+{% block title %}Gestion des Réservations - Administration ÉquiClub{% endblock %}
+
+{% block page_title %}Gestion des Réservations{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="table-container fade-in-up">
+            <!-- Filtres -->
+            <div class="row mb-4">
+                <div class="col-md-4">
+                    <h5>
+                        <i class="fas fa-calendar-check text-primary"></i>
+                        Liste des Réservations
+                    </h5>
+                </div>
+                <div class="col-md-8">
+                    <form method="get" class="row g-3">
+                        <div class="col-md-5">
+                            <input type="date" name="date" class="form-control" 
+                                   value="{{ request.GET.date }}">
+                        </div>
+                        <div class="col-md-5">
+                            <select name="activite" class="form-select">
+                                <option value="">Toutes les activités</option>
+                                {% for activite in activites %}
+                                <option value="{{ activite.id }}" 
+                                        {% if request.GET.activite == activite.id|stringformat:"s" %}selected{% endif %}>
+                                    {{ activite.nom }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <button type="submit" class="btn btn-primary-custom w-100">
+                                <i class="fas fa-filter"></i> Filtrer
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Client</th>
+                            <th>Activité</th>
+                            <th>Date Réservation</th>
+                            <th>Prix (DH)</th>
+                            <th>Statut</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for reservation in reservations %}
+                        <tr>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div class="user-avatar me-2" style="width: 35px; height: 35px; font-size: 0.8rem;">
+                                        {{ reservation.user.username|first|upper }}
+                                    </div>
+                                    <div>
+                                        <h6 class="mb-1">{{ reservation.user.username }}</h6>
+                                        <br>
+                                        <small class="text-muted">{{ reservation.user.email }}</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <strong>{{ reservation.activite.nom }}</strong>
+                                <br>
+                                <small class="text-muted">{{ reservation.activite.get_categorie_display }}</small>
+                            </td>
+                            <td>
+                                {{ reservation.created_at|date:"d/m/Y H:i" }}
+                            </td>
+                            <td>
+                                <strong>{{ reservation.activite.prix }} DH</strong>
+                            </td>
+                            <td>
+                                <span class="badge bg-success">Confirmée</span>
+                            </td>
+                            <td>
+                                <div class="btn-group" role="group">
+                                    <form method="POST"
+                                          action="{% url 'admin_app:reservation-confirm' pk=reservation.pk %}"
+                                          style="display: inline;">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-success btn-sm">
+                                            ✅
+                                        </button>
+                                    </form>
+                                    <a href="{% url 'admin_app:reservation-edit' pk=reservation.pk %}"
+                                       class="btn btn-warning btn-sm">
+                                      ✏️
+                                    </a>
+                                    <form method="POST"
+                                          action="{% url 'admin_app:reservation-cancel' pk=reservation.pk %}"
+                                          style="display: inline;">
+                                        {% csrf_token %}
+                                        <button type="submit"
+                                                class="btn btn-danger btn-sm"
+                                                onclick="return confirm('Annuler cette réservation ?')">
+                                            ❌
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center text-muted py-4">
+                                <i class="fas fa-inbox fa-3x mb-3"></i>
+                                <p>Aucune réservation trouvée</p>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

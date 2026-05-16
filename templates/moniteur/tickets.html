@@ -1,0 +1,305 @@
+{% extends 'moniteur/base.html' %}
+
+{% block title %}Validation Tickets - Espace Moniteur ÉquiClub{% endblock %}
+
+{% block page_title %}Validation des Tickets{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="planning-grid fade-in-up">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h5>
+                    <i class="fas fa-ticket-alt text-primary"></i>
+                    Tickets à Valider
+                </h5>
+                <div>
+                    <button class="btn btn-outline-primary me-2" onclick="scanQRCode()">
+                        <i class="fas fa-qrcode"></i> Scanner QR Code
+                    </button>
+                    <button class="btn btn-success" onclick="exportTickets()">
+                        <i class="fas fa-download"></i> Exporter
+                    </button>
+                </div>
+            </div>
+            
+            {% if tickets %}
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>QR Code</th>
+                                <th>Client</th>
+                                <th>Activité</th>
+                                <th>Date Création</th>
+                                <th>Statut</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for ticket in tickets %}
+                            <tr>
+                                <td>
+                                    <div class="text-center">
+                                        <div class="qr-scanner">
+                                            <i class="fas fa-qrcode fa-2x text-muted"></i>
+                                        </div>
+                                        <small class="text-muted d-block mt-1">{{ ticket.qr_code|truncatechars:12 }}</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="user-avatar me-2" style="width: 35px; height: 35px; font-size: 0.8rem;">
+                                            {{ ticket.reservation.user.username|first|upper }}
+                                        </div>
+                                        <div>
+                                            <strong>{{ ticket.reservation.user.get_full_name|default:ticket.reservation.user.username }}</strong>
+                                            <br>
+                                            <small class="text-muted">{{ ticket.reservation.user.email }}</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <strong>{{ ticket.reservation.activite.nom }}</strong>
+                                    <br>
+                                    <small class="text-muted">{{ ticket.reservation.activite.get_categorie_display }}</small>
+                                </td>
+                                <td>{{ ticket.created_at|date:"d/m/Y H:i" }}</td>
+                                <td>
+                                    {% if ticket.statut == 'valide' %}
+                                        <span class="badge badge-status badge-valid">
+                                            <i class="fas fa-check-circle"></i> Valide
+                                        </span>
+                                    {% elif ticket.statut == 'utilise' %}
+                                        <span class="badge badge-status badge-used">
+                                            <i class="fas fa-check-double"></i> Utilisé
+                                        </span>
+                                    {% else %}
+                                        <span class="badge badge-status badge-cancelled">
+                                            <i class="fas fa-times-circle"></i> Annulé
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        {% if ticket.statut == 'valide' %}
+                                            <button class="btn btn-sm btn-outline-success" 
+                                                    onclick="validerTicket({{ ticket.id }})" 
+                                                    title="Valider le ticket">
+                                                <i class="fas fa-check"></i>
+                                            </button>
+                                        {% endif %}
+                                        <button class="btn btn-sm btn-outline-info" 
+                                                title="Voir détails"
+                                                onclick="voirDetailsTicket('{{ ticket.id }}', '{{ ticket.reservation.user.get_full_name|default:ticket.reservation.user.username }}', '{{ ticket.reservation.activite.nom }}', '{{ ticket.statut }}', '{{ ticket.created_at|date:"d/m/Y H:i" }}', '{{ ticket.code_qr|default:ticket.id }}')">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-ticket-alt fa-4x text-muted mb-3"></i>
+                    <h5 class="text-muted">Aucun ticket trouvé</h5>
+                    <p class="text-muted">Aucun ticket à valider pour vos activités assignées.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Statistiques -->
+<div class="row mt-4">
+    <div class="col-md-4">
+        <div class="session-card text-center">
+            <i class="fas fa-ticket-alt fa-2x text-primary mb-2"></i>
+            <h4>{{ tickets|length }}</h4>
+            <p class="text-muted mb-0">Tickets total</p>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="session-card text-center">
+            <i class="fas fa-check-circle fa-2x text-success mb-2"></i>
+            <h4>{{ tickets|length|add:"-2" }}</h4>
+            <p class="text-muted mb-0">Tickets validés</p>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="session-card text-center">
+            <i class="fas fa-clock fa-2x text-warning mb-2"></i>
+            <h4>2</h4>
+            <p class="text-muted mb-0">En attente</p>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Scanner QR Code -->
+<div class="modal fade" id="qrScannerModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-qrcode text-primary"></i>
+                    Scanner QR Code
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center">
+                <div class="qr-scanner mb-3">
+                    <i class="fas fa-qrcode fa-4x text-muted"></i>
+                </div>
+                <p class="text-muted mb-3">Positionnez le QR code dans la zone de scan</p>
+                <div class="mb-3">
+                    <input type="text" class="form-control" placeholder="Ou entrez manuellement le code QR" id="manualQRCode">
+                </div>
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i>
+                    <strong>Astuce :</strong> Vous pouvez scanner directement le QR code du ticket avec votre appareil photo ou entrer manuellement le code.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <button type="button" class="btn btn-primary-custom" onclick="validerQRCode()">Valider</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Détails Ticket -->
+<div class="modal fade" id="ticketDetailModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-info text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-ticket-alt"></i> Détails du Ticket
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <strong>Client :</strong> <span id="detail-client"></span>
+                </div>
+                <div class="mb-3">
+                    <strong>Activité :</strong> <span id="detail-activite"></span>
+                </div>
+                <div class="mb-3">
+                    <strong>Statut :</strong> <span id="detail-statut" class="badge"></span>
+                </div>
+                <div class="mb-3">
+                    <strong>Date création :</strong> <span id="detail-date"></span>
+                </div>
+                <div class="mb-3">
+                    <strong>Code ticket :</strong> <span id="detail-code" class="badge bg-secondary"></span>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function voirDetailsTicket(id, client, activite, statut, date, code) {
+    document.getElementById('detail-client').textContent = client;
+    document.getElementById('detail-activite').textContent = activite;
+    document.getElementById('detail-date').textContent = date;
+    document.getElementById('detail-code').textContent = code;
+    
+    const statutEl = document.getElementById('detail-statut');
+    statutEl.textContent = statut;
+    statutEl.className = 'badge';
+    if (statut === 'valide') {
+        statutEl.classList.add('bg-success');
+    } else if (statut === 'en_attente') {
+        statutEl.classList.add('bg-warning');
+    } else {
+        statutEl.classList.add('bg-danger');
+    }
+    
+    const modal = new bootstrap.Modal(document.getElementById('ticketDetailModal'));
+    modal.show();
+}
+
+function exportTickets() {
+    const tickets = [];
+    const rows = document.querySelectorAll('table tbody tr');
+    
+    rows.forEach(row => {
+        const cells = row.querySelectorAll('td');
+        if (cells.length > 2) {
+            tickets.push({
+                client: cells[1] ? cells[1].innerText.trim() : '',
+                activite: cells[2] ? cells[2].innerText.trim() : '',
+                date: cells[3] ? cells[3].innerText.trim() : '',
+                statut: cells[4] ? cells[4].innerText.trim() : '',
+            });
+        }
+    });
+    
+    if (tickets.length === 0) {
+        alert('Aucun ticket à exporter.');
+        return;
+    }
+    
+    let csv = 'Client,Activité,Date Création,Statut\n';
+    tickets.forEach(t => {
+        csv += `"${t.client}","${t.activite}","${t.date}","${t.statut}"\n`;
+    });
+    
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'tickets_export.csv';
+    link.click();
+    URL.revokeObjectURL(url);
+}
+
+function scanQRCode() {
+    const modal = new bootstrap.Modal(document.getElementById('qrScannerModal'));
+    modal.show();
+    document.getElementById('manualQRCode').value = '';
+    document.getElementById('manualQRCode').focus();
+}
+
+function validerQRCode() {
+    const code = document.getElementById('manualQRCode').value.trim();
+    
+    if (!code) {
+        alert('Veuillez entrer un code QR.');
+        return;
+    }
+    
+    fetch(`/moniteur/tickets/valider/${code}/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': document.cookie.split('csrftoken=')[1]?.split(';')[0] || ''
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('✅ Ticket validé avec succès !');
+            bootstrap.Modal.getInstance(
+                document.getElementById('qrScannerModal')
+            ).hide();
+            window.location.reload();
+        } else {
+            alert('❌ Erreur : ' + (data.error || 'Ticket introuvable.'));
+        }
+    })
+    .catch(error => {
+        alert('❌ Erreur de connexion : ' + error.message);
+    });
+}
+</script>
+{% endblock %}

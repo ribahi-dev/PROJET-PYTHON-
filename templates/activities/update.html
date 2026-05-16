@@ -1,0 +1,92 @@
+{% extends "admin/base.html" %}
+{% block content %}
+<div class="container mt-4">
+  <h3>✏️ Modifier l'activité</h3>
+  <div class="card p-4">
+    <form method="POST">
+      {% csrf_token %}
+      <div class="row">
+        <div class="col-md-6 mb-3">
+          <label class="form-label">Nom de l'activité</label>
+          <input type="text" 
+                 name="nom" 
+                 class="form-control" 
+                 value="{{ form.nom.value|default:activite.nom }}"
+                 required>
+        </div>
+        <div class="col-md-6 mb-3">
+          <label class="form-label">Catégorie</label>
+          <select name="categorie" class="form-select" required>
+            {% for value, label in form.categorie.field.choices %}
+              <option value="{{ value }}" 
+                      {% if activite.categorie == value %}selected{% endif %}>
+                {{ label }}
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+      
+      <div class="mb-3">
+        <label class="form-label">Description</label>
+        <textarea name="description" 
+                  class="form-control" 
+                  rows="4">{{ form.description.value|default:activite.description }}</textarea>
+      </div>
+      
+      <div class="row">
+        <div class="col-md-4 mb-3">
+          <label class="form-label">Prix (DH)</label>
+          <input type="number" 
+                 name="prix" 
+                 class="form-control" 
+                 value="{{ form.prix.value|default:activite.prix }}"
+                 step="0.01"
+                 min="0"
+                 required>
+        </div>
+        <div class="col-md-4 mb-3">
+          <label class="form-label">Durée</label>
+          <input type="text" 
+                 name="duree" 
+                 class="form-control" 
+                 value="{{ form.duree.value|default:activite.duree }}"
+                 placeholder="Ex: 1h"
+                 required>
+        </div>
+        <div class="col-md-4 mb-3">
+          <label class="form-label">Places maximum</label>
+          <input type="number" 
+                 name="places_max" 
+                 class="form-control" 
+                 value="{{ form.places_max.value|default:activite.places_max }}"
+                 min="1"
+                 required>
+        </div>
+      </div>
+      
+      <div class="mb-3">
+        <div class="form-check">
+          <input type="checkbox" 
+                 name="disponible" 
+                 class="form-check-input" 
+                 id="disponible"
+                 {% if activite.disponible %}checked{% endif %}>
+          <label class="form-check-label" for="disponible">
+            Activité disponible
+          </label>
+        </div>
+      </div>
+      
+      <div class="d-flex gap-2">
+        <button type="submit" class="btn btn-primary">
+          💾 Enregistrer
+        </button>
+        <a href="{% url 'admin_app:activities' %}" class="btn btn-secondary">
+          Annuler
+        </a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

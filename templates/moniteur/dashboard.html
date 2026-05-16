@@ -1,0 +1,206 @@
+{% extends 'moniteur/base.html' %}
+
+{% block title %}Dashboard - Espace Moniteur ÉquiClub{% endblock %}
+
+{% block page_title %}Tableau de Bord{% endblock %}
+
+{% block content %}
+<!-- Statistiques du jour -->
+<div class="row fade-in-up">
+    <div class="col-xl-4 col-md-6 mb-4">
+        <div class="session-card text-center">
+            <div class="card-icon mx-auto mb-3" style="width: 60px; height: 60px; background: linear-gradient(135deg, #2d6a4f, #40916c); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                <i class="fas fa-calendar-day fa-2x text-white"></i>
+            </div>
+            <h3>{{ plannings_du_jour|length }}</h3>
+            <p class="text-muted mb-0">Séances aujourd'hui</p>
+        </div>
+    </div>
+    
+    <div class="col-xl-4 col-md-6 mb-4">
+        <div class="session-card text-center">
+            <div class="card-icon mx-auto mb-3" style="width: 60px; height: 60px; background: linear-gradient(135deg, #28a745, #20c997); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                <i class="fas fa-users fa-2x text-white"></i>
+            </div>
+            <h3>{{ total_participants }}</h3>
+            <p class="text-muted mb-0">Participants aujourd'hui</p>
+        </div>
+    </div>
+    
+    <div class="col-xl-4 col-md-6 mb-4">
+        <div class="session-card text-center">
+            <div class="card-icon mx-auto mb-3" style="width: 60px; height: 60px; background: linear-gradient(135deg, #ffc107, #ff9800); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                <i class="fas fa-running fa-2x text-white"></i>
+            </div>
+            <h3>{{ activites_assignees|length }}</h3>
+            <p class="text-muted mb-0">Activités assignées</p>
+        </div>
+    </div>
+</div>
+
+<!-- Séances du jour -->
+<div class="row">
+    <div class="col-xl-8 mb-4">
+        <div class="planning-grid fade-in-up">
+            <h5 class="mb-4">
+                <i class="fas fa-clock text-primary"></i>
+                Séances du Jour
+            </h5>
+            
+            {% if plannings_du_jour %}
+                {% for planning in plannings_du_jour %}
+                <div class="session-card">
+                    <div class="row align-items-center">
+                        <div class="col-md-3">
+                            <div class="session-time">
+                                <i class="fas fa-clock"></i>
+                                {{ planning.heure_debut }} - {{ planning.heure_fin }}
+                            </div>
+                            <div class="text-muted small">{{ planning.get_jour_display }}</div>
+                        </div>
+                        <div class="col-md-5">
+                            <div class="session-activity">{{ planning.activite.nom }}</div>
+                            <div class="session-participants">
+                                <i class="fas fa-users"></i>
+                                {% with participants_count=planning.activite.reservation_set.count %}
+                                    {{ participants_count }} / {{ planning.places_disponibles }} participants
+                                {% endwith %}
+                            </div>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <a href="{% url 'moniteur_presences_detail' planning.id %}" class="btn btn-sm btn-outline-primary me-2">
+                                <i class="fas fa-user-check"></i> Présences
+                            </a>
+                            <button class="btn btn-sm btn-outline-success">
+                                <i class="fas fa-qrcode"></i> Scanner
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-calendar-times fa-4x text-muted mb-3"></i>
+                    <h5 class="text-muted">Aucune séance aujourd'hui</h5>
+                    <p class="text-muted">Profitez de votre journée pour vous préparer !</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Activités assignées -->
+    <div class="col-xl-4 mb-4">
+        <div class="planning-grid fade-in-up">
+            <h5 class="mb-4">
+                <i class="fas fa-list text-success"></i>
+                Mes Activités
+            </h5>
+            
+            {% for activite in activites_assignees %}
+            <div class="session-card">
+                <div class="d-flex align-items-center mb-2">
+                    <i class="fas fa-running text-primary me-2"></i>
+                    <strong>{{ activite.nom }}</strong>
+                </div>
+                <div class="small text-muted mb-2">
+                    {{ activite.get_categorie_display }} • {{ activite.duree }}
+                </div>
+                <div class="d-flex justify-content-between align-items-center">
+                    <span class="badge bg-success">DH{{ activite.prix }}</span>
+                    <span class="badge bg-info">{{ activite.places_max }} places</span>
+                </div>
+            </div>
+            {% empty %}
+            <div class="text-center py-4">
+                <i class="fas fa-inbox fa-3x text-muted mb-2"></i>
+                <p class="text-muted">Aucune activité assignée</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<!-- Actions rapides -->
+<div class="row">
+    <div class="col-12">
+        <div class="planning-grid fade-in-up">
+            <h5 class="mb-4">
+                <i class="fas fa-bolt text-warning"></i>
+                Actions Rapides
+            </h5>
+            
+            <div class="row">
+                <div class="col-md-3 mb-3">
+                    <a href="{% url 'moniteur_planning' %}" class="btn btn-outline-primary w-100 h-100 d-flex flex-column align-items-center justify-content-center" style="min-height: 100px;">
+                        <i class="fas fa-calendar-alt fa-2x mb-2"></i>
+                        Voir mon planning
+                    </a>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <a href="{% url 'moniteur_presences' %}" class="btn btn-outline-success w-100 h-100 d-flex flex-column align-items-center justify-content-center" style="min-height: 100px;">
+                        <i class="fas fa-user-check fa-2x mb-2"></i>
+                        Gérer les présences
+                    </a>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <a href="{% url 'moniteur_tickets' %}" class="btn btn-outline-warning w-100 h-100 d-flex flex-column align-items-center justify-content-center" style="min-height: 100px;">
+                        <i class="fas fa-ticket-alt fa-2x mb-2"></i>
+                        Valider des tickets
+                    </a>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <button class="btn btn-outline-info w-100 h-100 d-flex flex-column align-items-center justify-content-center" style="min-height: 100px;" onclick="alert('Fonctionnalité bientôt disponible')">
+                        <i class="fas fa-chart-bar fa-2x mb-2"></i>
+                        Mes statistiques
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Informations importantes -->
+{% if user_role != 'admin' %}
+<div class="row">
+    <div class="col-12">
+        <div class="alert alert-info fade-in-up">
+            <div class="d-flex align-items-center">
+                <i class="fas fa-info-circle fa-2x me-3"></i>
+                <div>
+                    <h6 class="alert-heading">Bienvenue dans votre espace moniteur !</h6>
+                    <p class="mb-0">
+                        Retrouvez ici toutes vos séances, gérez les présences et validez les tickets. 
+                        N'hésitez pas à contacter l'administration en cas de problème.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Animation des nombres
+    const statNumbers = document.querySelectorAll('h3');
+    statNumbers.forEach(element => {
+        const finalValue = parseInt(element.textContent);
+        if (!isNaN(finalValue)) {
+            let currentValue = 0;
+            const increment = finalValue / 50;
+            
+            const timer = setInterval(() => {
+                currentValue += increment;
+                if (currentValue >= finalValue) {
+                    currentValue = finalValue;
+                    clearInterval(timer);
+                }
+                element.textContent = Math.floor(currentValue);
+            }, 20);
+        }
+    });
+});
+</script>
+{% endblock %}

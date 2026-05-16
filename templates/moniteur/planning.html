@@ -1,0 +1,322 @@
+{% extends 'moniteur/base.html' %}
+
+{% block title %}Mon Planning - Espace Moniteur ÉquiClub{% endblock %}
+
+{% block page_title %}Mon Planning{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="planning-grid fade-in-up">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h5>
+                    <i class="fas fa-calendar-alt text-primary"></i>
+                    Planning Hebdomadaire
+                </h5>
+                <div>
+                    <button class="btn btn-outline-primary me-2" onclick="printPlanning()">
+                        <i class="fas fa-print"></i> Imprimer
+                    </button>
+                    <button class="btn btn-primary-custom" data-bs-toggle="modal" data-bs-target="#addPlanningModal">
+                        <i class="fas fa-plus"></i> Ajouter Séance
+                    </button>
+                </div>
+            </div>
+            
+            {% if plannings %}
+                <!-- Lundi -->
+                <div class="planning-day">
+                    <div class="day-header">
+                        <i class="fas fa-calendar-day"></i> Lundi
+                    </div>
+                    {% for planning in plannings %}
+                        {% if planning.jour == 'lundi' %}
+                            <div class="planning-item">
+                                <div class="row align-items-center">
+                                    <div class="col-md-4">
+                                        <strong>{{ planning.heure_debut }} - {{ planning.heure_fin }}</strong>
+                                    </div>
+                                    <div class="col-md-5">
+                                        <div>{{ planning.activite.nom }}</div>
+                                        <small class="text-muted">{{ planning.activite.duree }} • {{ planning.activite.places_max }} places</small>
+                                    </div>
+                                    <div class="col-md-3 text-end">
+                                        {% with participants=planning.activite.reservation_set.count %}
+                                            <span {% if planning.activite.places_max > 0 %}class="badge bg-success"{% else %}class="badge bg-warning"{% endif %}>
+                                                {{ participants }}/{{ planning.activite.places_max }}
+                                            </span>
+                                        {% endwith %}
+                                    </div>
+                                </div>
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+
+                <!-- Mardi -->
+                <div class="planning-day">
+                    <div class="day-header">
+                        <i class="fas fa-calendar-day"></i> Mardi
+                    </div>
+                    {% for planning in plannings %}
+                        {% if planning.jour == 'mardi' %}
+                            <div class="planning-item">
+                                <div class="row align-items-center">
+                                    <div class="col-md-4">
+                                        <strong>{{ planning.heure_debut }} - {{ planning.heure_fin }}</strong>
+                                    </div>
+                                    <div class="col-md-5">
+                                        <div>{{ planning.activite.nom }}</div>
+                                        <small class="text-muted">{{ planning.activite.duree }} • {{ planning.activite.places_max }} places</small>
+                                    </div>
+                                    <div class="col-md-3 text-end">
+                                        {% with participants=planning.activite.reservation_set.count %}
+                                            <span {% if planning.activite.places_max > 0 %}class="badge bg-success"{% else %}class="badge bg-warning"{% endif %}>
+                                                {{ participants }}/{{ planning.activite.places_max }}
+                                            </span>
+                                        {% endwith %}
+                                    </div>
+                                </div>
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+
+                <!-- Mercredi -->
+                <div class="planning-day">
+                    <div class="day-header">
+                        <i class="fas fa-calendar-day"></i> Mercredi
+                    </div>
+                    {% for planning in plannings %}
+                        {% if planning.jour == 'mercredi' %}
+                            <div class="planning-item">
+                                <div class="row align-items-center">
+                                    <div class="col-md-4">
+                                        <strong>{{ planning.heure_debut }} - {{ planning.heure_fin }}</strong>
+                                    </div>
+                                    <div class="col-md-5">
+                                        <div>{{ planning.activite.nom }}</div>
+                                        <small class="text-muted">{{ planning.activite.duree }} • {{ planning.activite.places_max }} places</small>
+                                    </div>
+                                    <div class="col-md-3 text-end">
+                                        {% with participants=planning.activite.reservation_set.count %}
+                                            <span {% if planning.activite.places_max > 0 %}class="badge bg-success"{% else %}class="badge bg-warning"{% endif %}>
+                                                {{ participants }}/{{ planning.activite.places_max }}
+                                            </span>
+                                        {% endwith %}
+                                    </div>
+                                </div>
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+
+                <!-- Jeudi -->
+                <div class="planning-day">
+                    <div class="day-header">
+                        <i class="fas fa-calendar-day"></i> Jeudi
+                    </div>
+                    {% for planning in plannings %}
+                        {% if planning.jour == 'jeudi' %}
+                            <div class="planning-item">
+                                <div class="row align-items-center">
+                                    <div class="col-md-4">
+                                        <strong>{{ planning.heure_debut }} - {{ planning.heure_fin }}</strong>
+                                    </div>
+                                    <div class="col-md-5">
+                                        <div>{{ planning.activite.nom }}</div>
+                                        <small class="text-muted">{{ planning.activite.duree }} • {{ planning.activite.places_max }} places</small>
+                                    </div>
+                                    <div class="col-md-3 text-end">
+                                        {% with participants=planning.activite.reservation_set.count %}
+                                            <span {% if planning.activite.places_max > 0 %}class="badge bg-success"{% else %}class="badge bg-warning"{% endif %}>
+                                                {{ participants }}/{{ planning.activite.places_max }}
+                                            </span>
+                                        {% endwith %}
+                                    </div>
+                                </div>
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+
+                <!-- Vendredi -->
+                <div class="planning-day">
+                    <div class="day-header">
+                        <i class="fas fa-calendar-day"></i> Vendredi
+                    </div>
+                    {% for planning in plannings %}
+                        {% if planning.jour == 'vendredi' %}
+                            <div class="planning-item">
+                                <div class="row align-items-center">
+                                    <div class="col-md-4">
+                                        <strong>{{ planning.heure_debut }} - {{ planning.heure_fin }}</strong>
+                                    </div>
+                                    <div class="col-md-5">
+                                        <div>{{ planning.activite.nom }}</div>
+                                        <small class="text-muted">{{ planning.activite.duree }} • {{ planning.activite.places_max }} places</small>
+                                    </div>
+                                    <div class="col-md-3 text-end">
+                                        {% with participants=planning.activite.reservation_set.count %}
+                                            <span {% if planning.activite.places_max > 0 %}class="badge bg-success"{% else %}class="badge bg-warning"{% endif %}>
+                                                {{ participants }}/{{ planning.activite.places_max }}
+                                            </span>
+                                        {% endwith %}
+                                    </div>
+                                </div>
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+
+                <!-- Samedi -->
+                <div class="planning-day">
+                    <div class="day-header">
+                        <i class="fas fa-calendar-day"></i> Samedi
+                    </div>
+                    {% for planning in plannings %}
+                        {% if planning.jour == 'samedi' %}
+                            <div class="planning-item">
+                                <div class="row align-items-center">
+                                    <div class="col-md-4">
+                                        <strong>{{ planning.heure_debut }} - {{ planning.heure_fin }}</strong>
+                                    </div>
+                                    <div class="col-md-5">
+                                        <div>{{ planning.activite.nom }}</div>
+                                        <small class="text-muted">{{ planning.activite.duree }} • {{ planning.activite.places_max }} places</small>
+                                    </div>
+                                    <div class="col-md-3 text-end">
+                                        {% with participants=planning.activite.reservation_set.count %}
+                                            <span {% if planning.activite.places_max > 0 %}class="badge bg-success"{% else %}class="badge bg-warning"{% endif %}>
+                                                {{ participants }}/{{ planning.activite.places_max }}
+                                            </span>
+                                        {% endwith %}
+                                    </div>
+                                </div>
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+
+                <!-- Dimanche -->
+                <div class="planning-day">
+                    <div class="day-header">
+                        <i class="fas fa-calendar-day"></i> Dimanche
+                    </div>
+                    {% for planning in plannings %}
+                        {% if planning.jour == 'dimanche' %}
+                            <div class="planning-item">
+                                <div class="row align-items-center">
+                                    <div class="col-md-4">
+                                        <strong>{{ planning.heure_debut }} - {{ planning.heure_fin }}</strong>
+                                    </div>
+                                    <div class="col-md-5">
+                                        <div>{{ planning.activite.nom }}</div>
+                                        <small class="text-muted">{{ planning.activite.duree }} • {{ planning.activite.places_max }} places</small>
+                                    </div>
+                                    <div class="col-md-3 text-end">
+                                        {% with participants=planning.activite.reservation_set.count %}
+                                            <span {% if planning.activite.places_max > 0 %}class="badge bg-success"{% else %}class="badge bg-warning"{% endif %}>
+                                                {{ participants }}/{{ planning.activite.places_max }}
+                                            </span>
+                                        {% endwith %}
+                                    </div>
+                                </div>
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+
+            {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-calendar-times fa-4x text-muted mb-3"></i>
+                    <h5 class="text-muted">Aucune séance planifiée</h5>
+                    <p class="text-muted">Commencez par ajouter des séances à votre planning</p>
+                    <button class="btn btn-primary-custom" data-bs-toggle="modal" data-bs-target="#addPlanningModal">
+                        <i class="fas fa-plus"></i> Ajouter ma première séance
+                    </button>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Modal Ajouter Planning -->
+<div class="modal fade" id="addPlanningModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-plus text-primary"></i>
+                    Ajouter une Séance
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{% url 'moniteur_planning' %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Jour</label>
+                        <select name="jour" class="form-select" required>
+                            <option value="Lundi">Lundi</option>
+                            <option value="Mardi">Mardi</option>
+                            <option value="Mercredi">Mercredi</option>
+                            <option value="Jeudi">Jeudi</option>
+                            <option value="Vendredi">Vendredi</option>
+                            <option value="Samedi">Samedi</option>
+                            <option value="Dimanche">Dimanche</option>
+                        </select>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Heure de début</label>
+                            <input type="time" name="heure_debut" class="form-control" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Heure de fin</label>
+                            <input type="time" name="heure_fin" class="form-control" required>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Activité</label>
+                        <select name="activite" class="form-select" required>
+                            <option value="">Sélectionner une activité</option>
+                            {% for activite in activites %}
+                            <option value="{{ activite.id }}">{{ activite.nom }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Places disponibles</label>
+                        <input type="number" name="places_disponibles" class="form-control" value="10" min="1" max="20">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-success">Ajouter la séance</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function printPlanning() {
+    window.print();
+}
+</script>
+
+<style>
+@media print {
+    .sidebar, .top-bar, .btn, .modal {
+        display: none !important;
+    }
+    .main-content {
+        margin-left: 0 !important;
+        padding: 20px !important;
+    }
+}
+</style>
+{% endblock %}

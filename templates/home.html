@@ -1,0 +1,196 @@
+{% extends 'base.html' %}
+
+{% block title %}Accueil - Club Équitation & Balades en Mer{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="jumbotron bg-primary text-white p-5 rounded mb-4">
+            <div class="container text-center">
+                <h1 class="display-4 mb-4">
+                    <i class="fas fa-horse me-3"></i>
+                    Club Équitation & Balades en Mer
+                </h1>
+                <p class="lead mb-4">
+                    Bienvenue dans votre système de gestion complet pour les activités équestres et maritimes. 
+                    Réservez vos séances, gérez vos tickets et suivez vos activités en toute simplicité.
+                </p>
+                {% if not user.is_authenticated %}
+                    <div class="row justify-content-center">
+                        <div class="col-md-6">
+                            <a href="{% url 'signup' %}" class="btn btn-light btn-lg me-2">
+                                <i class="fas fa-user-plus me-2"></i>S'inscrire
+                            </a>
+                            <a href="{% url 'login' %}" class="btn btn-outline-light btn-lg">
+                                <i class="fas fa-sign-in-alt me-2"></i>Se connecter
+                            </a>
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="row justify-content-center">
+                        <div class="col-md-6">
+                            <a href="{% url 'activities:activite-list' %}" class="btn btn-light btn-lg me-2">
+                                <i class="fas fa-calendar me-2"></i>Voir les Activités
+                            </a>
+                            <a href="{% url 'reservations:reservation-create' %}" class="btn btn-outline-light btn-lg">
+                                <i class="fas fa-ticket-alt me-2"></i>Nouvelle Réservation
+                            </a>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-4 mb-4">
+        <div class="card h-100 shadow-sm">
+            <div class="card-body text-center">
+                <div class="feature-icon bg-primary text-white rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
+                    <i class="fas fa-horse fa-2x"></i>
+                </div>
+                <h5 class="card-title">Activités Équestres</h5>
+                <p class="card-text">
+                    Découvrez nos cours d'équitation, balades à cheval et stages pour tous les niveaux. 
+                    Des moniteurs qualifiés vous accompagnent dans votre progression.
+                </p>
+                {% if user.is_authenticated %}
+                    <a href="{% url 'activities:activite-list' %}" class="btn btn-primary">
+                        <i class="fas fa-search me-1"></i>Explorer les activités
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4 mb-4">
+        <div class="card h-100 shadow-sm">
+            <div class="card-body text-center">
+                <div class="feature-icon bg-info text-white rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
+                    <i class="fas fa-ship fa-2x"></i>
+                </div>
+                <h5 class="card-title">Balades en Mer</h5>
+                <p class="card-text">
+                    Profitez de nos sorties en mer, cours de voile et activités nautiques. 
+                    Une expérience unique pour découvrir les joies de la navigation.
+                </p>
+                {% if user.is_authenticated %}
+                    <a href="{% url 'activities:activite-list' %}" class="btn btn-info">
+                        <i class="fas fa-water me-1"></i>Voir les sorties
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4 mb-4">
+        <div class="card h-100 shadow-sm">
+            <div class="card-body text-center">
+                <div class="feature-icon bg-success text-white rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
+                    <i class="fas fa-ticket-alt fa-2x"></i>
+                </div>
+                <h5 class="card-title">Gestion des Tickets</h5>
+                <p class="card-text">
+                    Support technique, questions et assistance pour toutes vos demandes. 
+                    Suivez vos tickets et obtenez une réponse rapide de notre équipe.
+                </p>
+                {% if user.is_authenticated %}
+                    <a href="{% url 'reservations:reservation-create' %}" class="btn btn-success">
+                        <i class="fas fa-plus me-1"></i>Créer une réservation
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if user.is_authenticated %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-light">
+                <h5 class="mb-0">
+                    <i class="fas fa-tachometer-alt me-2"></i>
+                    Votre Tableau de Bord
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3 text-center mb-3">
+                        <div class="stat-box">
+                            <h3 class="text-primary">{{ user.reservations.count|default:0 }}</h3>
+                            <p class="text-muted">Réservations actives</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3 text-center mb-3">
+                        <div class="stat-box">
+                            <h3 class="text-info">{{ user.tickets.count|default:0 }}</h3>
+                            <p class="text-muted">Tickets créés</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3 text-center mb-3">
+                        <div class="stat-box">
+                            <h3 class="text-success">{{ user.reservations.count|default:0 }}</h3>
+                            <p class="text-muted">Confirmées</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3 text-center mb-3">
+                        <div class="stat-box">
+                            <h3 class="text-warning">{{ user.tickets.count|default:0 }}</h3>
+                            <p class="text-muted">Tickets en cours</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<div class="row mt-5">
+    <div class="col-12">
+        <div class="card bg-light">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Actualités du Club
+                </h5>
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-calendar-alt me-2"></i>Prochains Événements</h6>
+                        <ul class="list-unstyled">
+                            <li class="mb-2">
+                                <strong>15 Mai:</strong> Stage d'équitation pour débutants
+                            </li>
+                            <li class="mb-2">
+                                <strong>20 Mai:</strong> Sortie en mer - coucher de soleil
+                            </li>
+                            <li class="mb-2">
+                                <strong>1 Juin:</strong> Compétition interne de saut d'obstacles
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-bullhorn me-2"></i>Annonces</h6>
+                        <ul class="list-unstyled">
+                            <li class="mb-2">
+                                <span class="badge bg-success me-2">Nouveau</span>
+                                Nouveaux cours de voile disponibles
+                            </li>
+                            <li class="mb-2">
+                                <span class="badge bg-primary me-2">Info</span>
+                                Horaires d'été modifiés à partir du 1er juin
+                            </li>
+                            <li class="mb-2">
+                                <span class="badge bg-warning me-2">Important</span>
+                                Maintenance fermée les 25-26 mai
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,338 @@
+{% extends 'base.html' %}
+
+{% block title %}Ticket {{ ticket.code }} - {{ ticket.reservation.activite.nom }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <!-- Ticket principal -->
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white text-center">
+                <h5 class="mb-0">
+                    <i class="fas fa-ticket-alt me-2"></i>
+                    Ticket d'Activité
+                </h5>
+            </div>
+            <div class="card-body text-center">
+                <!-- Code du ticket -->
+                <div class="ticket-display mb-4">
+                    <div class="ticket-number">{{ ticket.code }}</div>
+                    <div class="ticket-label">CODE TICKET</div>
+                </div>
+                
+                <!-- QR Code placeholder -->
+                <div class="qr-code mb-4">
+                    <div class="qr-placeholder">
+                        <i class="fas fa-qrcode fa-4x text-muted"></i>
+                        <p class="small text-muted mt-2">QR Code</p>
+                    </div>
+                </div>
+                
+                <!-- Statut -->
+                <div class="mb-3">
+                    {% if ticket.statut == 'valide' %}
+                        <span class="badge bg-success fs-6">
+                    {% elif ticket.statut == 'utilise' %}
+                        <span class="badge bg-info fs-6">
+                    {% else %}
+                        <span class="badge bg-danger fs-6">
+                    {% endif %}
+                        {{ ticket.get_statut_display }}
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Détails de la réservation -->
+        <div class="card mb-4">
+            <div class="card-header bg-info text-white">
+                <h6 class="mb-0">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Détails de la réservation
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Activité</h6>
+                        <table class="table table-borderless">
+                            <tr>
+                                <td><strong>Nom:</strong></td>
+                                <td>{{ ticket.reservation.activite.nom }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Catégorie:</strong></td>
+                                <td>
+                                    {% if ticket.reservation.activite.categorie == 'equitation' %}
+                                        <span class="badge" style="background:#1a2744">
+                                    {% elif ticket.reservation.activite.categorie == 'mer' %}
+                                        <span class="badge" style="background:#0891b2">
+                                    {% else %}
+                                        <span class="badge" style="background:#2d6a1f">
+                                    {% endif %}
+                                        {{ ticket.reservation.activite.get_categorie_display }}
+                                    </span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>Durée:</strong></td>
+                                <td>{{ ticket.reservation.activite.duree }}</td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Réservation</h6>
+                        <table class="table table-borderless">
+                            <tr>
+                                <td><strong>Date:</strong></td>
+                                <td>{{ ticket.reservation.date_reservation|date:"l d F Y" }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Participants:</strong></td>
+                                <td>{{ ticket.reservation.nombre_personnes }} personne{{ ticket.reservation.nombre_personnes|pluralize }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Prix total:</strong></td>
+                                <td class="text-success fw-bold">{{ ticket.reservation.activite.prix|mul:ticket.reservation.nombre_personnes }} DH</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+                
+                <hr>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>Réservée par:</strong> {{ ticket.reservation.user.username }}</p>
+                        <p><strong>Email:</strong> {{ ticket.reservation.user.email }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Référence:</strong> #{{ ticket.reservation.pk|stringformat:"06d" }}</p>
+                        <p><strong>Créé le:</strong> {{ ticket.created_at|date:"d/m/Y à H:i" }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Instructions -->
+        <div class="card">
+            <div class="card-header bg-warning text-dark">
+                <h6 class="mb-0">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Instructions importantes
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <h6><i class="fas fa-clock me-2"></i>Présentation</h6>
+                        <p class="small">Présentez-vous 15 minutes avant l'heure prévue avec ce code ticket.</p>
+                    </div>
+                    <div class="col-md-4">
+                        <h6><i class="fas fa-id-card me-2"></i>Identification</h6>
+                        <p class="small">Ayez une pièce d'identité et présentez ce code à l'accueil.</p>
+                    </div>
+                    <div class="col-md-4">
+                        <h6><i class="fas fa-phone me-2"></i>Contact</h6>
+                        <p class="small">En cas de retard ou problème: +33 1 23 45 67 89</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <!-- Actions -->
+        <div class="card mb-4">
+            <div class="card-header bg-secondary text-white">
+                <h6 class="mb-0">
+                    <i class="fas fa-cogs me-2"></i>
+                    Actions
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <button onclick="window.print()" class="btn btn-outline-primary">
+                        <i class="fas fa-print me-2"></i>Imprimer le ticket
+                    </button>
+                    <button onclick="copyTicketCode()" class="btn btn-outline-success">
+                        <i class="fas fa-copy me-2"></i>Copier le code
+                    </button>
+                    <a href="{% url 'reservations:reservation-detail' ticket.reservation.pk %}" class="btn btn-outline-info">
+                        <i class="fas fa-calendar-check me-2"></i>Voir la réservation
+                    </a>
+                    <a href="{% url 'tickets:ticket-list' %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-list me-2"></i>Mes tickets
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Informations de contact -->
+        <div class="card mb-4">
+            <div class="card-header bg-dark text-white">
+                <h6 class="mb-0">
+                    <i class="fas fa-map-marker-alt me-2"></i>
+                    Contact & Lieu
+                </h6>
+            </div>
+            <div class="card-body">
+                <p class="small mb-2"><strong>Téléphone:</strong> +33 1 23 45 67 89</p>
+                <p class="small mb-2"><strong>Email:</strong> contact@equiclub.fr</p>
+                <p class="small mb-2"><strong>Adresse:</strong> 123 Route de la Mer, 75000 Paris</p>
+                <p class="small"><strong>Horaires:</strong> 9h-18h du lundi au samedi</p>
+            </div>
+        </div>
+
+        <!-- Conditions -->
+        <div class="card">
+            <div class="card-header bg-light">
+                <h6 class="mb-0">
+                    <i class="fas fa-file-contract me-2"></i>
+                    Conditions d'utilisation
+                </h6>
+            </div>
+            <div class="card-body">
+                <ul class="small">
+                    <li>Ce ticket est personnel et non transmissible</li>
+                    <li>Valable uniquement pour la date et l'activité indiquées</li>
+                    <li>Présentation obligatoire 15 minutes avant</li>
+                    <li>Annulation possible jusqu'à 48h avant</li>
+                    <li>En cas de non-présentation, le ticket sera considéré comme utilisé</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Breadcrumb -->
+<nav aria-label="breadcrumb" class="mt-4">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item">
+            <a href="{% url 'home' %}" class="text-decoration-none">
+                <i class="fas fa-home me-1"></i>Accueil
+            </a>
+        </li>
+        <li class="breadcrumb-item">
+            <a href="{% url 'tickets:ticket-list' %}" class="text-decoration-none">
+                Mes tickets
+            </a>
+        </li>
+        <li class="breadcrumb-item active">{{ ticket.code }}</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.ticket-display {
+    padding: 2rem;
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+    color: white;
+    border-radius: 1rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.ticket-number {
+    font-size: 2.5rem;
+    font-weight: bold;
+    letter-spacing: 0.2rem;
+    font-family: 'Courier New', monospace;
+}
+
+.ticket-label {
+    font-size: 0.875rem;
+    opacity: 0.8;
+    margin-top: 0.5rem;
+}
+
+.qr-code {
+    padding: 1rem;
+}
+
+.qr-placeholder {
+    width: 150px;
+    height: 150px;
+    border: 2px dashed #6c757d;
+    border-radius: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+    background-color: #f8f9fa;
+}
+
+.breadcrumb {
+    background-color: transparent;
+    padding: 0;
+}
+
+.breadcrumb-item + .breadcrumb-item::before {
+    content: ">";
+    color: #6c757d;
+}
+
+@media print {
+    .no-print {
+        display: none !important;
+    }
+    
+    .ticket-display {
+        background: #007bff !important;
+        -webkit-print-color-adjust: exact;
+    }
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function copyTicketCode() {
+    const code = '{{ ticket.code }}';
+    navigator.clipboard.writeText(code).then(() => {
+        // Message de confirmation
+        const btn = event.target;
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-check me-2"></i>Copié !';
+        btn.classList.remove('btn-outline-success');
+        btn.classList.add('btn-success');
+        
+        setTimeout(() => {
+            btn.innerHTML = originalText;
+            btn.classList.remove('btn-success');
+            btn.classList.add('btn-outline-success');
+        }, 2000);
+    });
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Animation du ticket
+    const ticketDisplay = document.querySelector('.ticket-display');
+    if (ticketDisplay) {
+        ticketDisplay.style.opacity = '0';
+        ticketDisplay.style.transform = 'scale(0.9)';
+        
+        setTimeout(() => {
+            ticketDisplay.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+            ticketDisplay.style.opacity = '1';
+            ticketDisplay.style.transform = 'scale(1)';
+        }, 200);
+    }
+    
+    // Animation des cartes
+    const cards = document.querySelectorAll('.card');
+    cards.forEach((card, index) => {
+        if (card !== ticketDisplay.closest('.card')) {
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(20px)';
+            
+            setTimeout(() => {
+                card.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+                card.style.opacity = '1';
+                card.style.transform = 'translateY(0)';
+            }, (index + 1) * 100);
+        }
+    });
+});
+</script>
+{% endblock %}

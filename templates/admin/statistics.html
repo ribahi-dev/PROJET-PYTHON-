@@ -1,0 +1,285 @@
+{% extends 'admin/base.html' %}
+
+{% block title %}Statistiques - Administration ÉquiClub{% endblock %}
+
+{% block page_title %}Statistiques et Rapports{% endblock %}
+
+{% block content %}
+<!-- Cartes de statistiques -->
+<div class="row fade-in-up">
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="stat-card primary">
+            <div class="card-icon">
+                <i class="fas fa-ticket-alt"></i>
+            </div>
+            <div class="stat-number">{{ total_tickets }}</div>
+            <div class="stat-label">Tickets Total</div>
+        </div>
+    </div>
+    
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="stat-card success">
+            <div class="card-icon">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <div class="stat-number">85%</div>
+            <div class="stat-label">Taux Validation</div>
+        </div>
+    </div>
+    
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="stat-card warning">
+            <div class="card-icon">
+                <i class="fas fa-calendar-check"></i>
+            </div>
+            <div class="stat-number">124</div>
+            <div class="stat-label">Réservations Mois</div>
+        </div>
+    </div>
+    
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="stat-card danger">
+            <div class="card-icon">
+                <i class="fas fa-euro-sign"></i>
+            </div>
+            <div class="stat-number">8.5K DH</div>
+            <div class="stat-label">Revenus Mois</div>
+        </div>
+    </div>
+</div>
+
+<!-- Graphiques -->
+<div class="row">
+    <div class="col-xl-8 mb-4">
+        <div class="table-container fade-in-up">
+            <h5 class="mb-4">
+                <i class="fas fa-chart-line text-success"></i>
+                Revenus par Mois (6 derniers mois)
+            </h5>
+            <canvas id="revenusChart" height="100"></canvas>
+        </div>
+    </div>
+    
+    <div class="col-xl-4 mb-4">
+        <div class="table-container fade-in-up">
+            <h5 class="mb-4">
+                <i class="fas fa-chart-pie text-primary"></i>
+                Répartition par Catégorie
+            </h5>
+            <canvas id="categorieChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<!-- Tableaux détaillés -->
+<div class="row">
+    <div class="col-xl-6 mb-4">
+        <div class="table-container fade-in-up">
+            <h5 class="mb-4">
+                <i class="fas fa-running text-warning"></i>
+                Réservations par Activité
+            </h5>
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Activité</th>
+                            <th>Réservations</th>
+                            <th>Revenus</th>
+                            <th>Taux</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in reservations_par_activite %}
+                        <tr>
+                            <td>
+                                <strong>{{ item.activite.nom }}</strong>
+                                <br>
+                                <small class="text-muted">{{ item.activite.get_categorie_display }}</small>
+                            </td>
+                            <td>
+                                <span class="badge bg-primary">{{ item.nb_reservations }}</span>
+                            </td>
+                            <td>
+                                <strong>{{ item.revenus_total|floatformat:0|default:0 }} DH</strong>
+                            </td>
+                            <td>
+                                {% for taux_item in taux_remplissage %}
+                                    {% if taux_item.activite.id == item.activite.id %}
+                                        <div class="progress" style="height: 20px;">
+                                            <div class="progress-bar" role="progressbar" 
+                                                 style="width: {{ taux_item.taux|floatformat:0 }}%"
+                                                 aria-valuenow="{{ taux_item.taux|floatformat:0 }}" 
+                                                 aria-valuemin="0" aria-valuemax="100">
+                                                {{ taux_item.taux|floatformat:0 }}%
+                                            </div>
+                                        </div>
+                                    {% endif %}
+                                {% endfor %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4" class="text-center text-muted">
+                                Aucune donnée disponible
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-xl-6 mb-4">
+        <div class="table-container fade-in-up">
+            <h5 class="mb-4">
+                <i class="fas fa-percentage text-info"></i>
+                Taux de Remplissage
+            </h5>
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Activité</th>
+                            <th>Places Remplies</th>
+                            <th>Places Total</th>
+                            <th>Taux</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in taux_remplissage %}
+                        <tr>
+                            <td>
+                                <strong>{{ item.activite.nom }}</strong>
+                            </td>
+                            <td>{{ item.places_reservees }}</td>
+                            <td>{{ item.total_places }}</td>
+                            <td>
+                                <div class="progress" style="height: 25px;">
+                                    <div class="progress-bar 
+                                        {% if item.taux >= 80 %}
+                                            bg-success
+                                        {% elif item.taux >= 50 %}
+                                            bg-warning
+                                        {% else %}
+                                            bg-danger
+                                        {% endif %}" 
+                                        role="progressbar" 
+                                        style="width: {{ item.taux|floatformat:0 }}%"
+                                        aria-valuenow="{{ item.taux|floatformat:0 }}" 
+                                        aria-valuemin="0" aria-valuemax="100">
+                                        {{ item.taux|floatformat:0 }}%
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4" class="text-center text-muted">
+                                Aucune donnée disponible
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Export -->
+<div class="row">
+    <div class="col-12">
+        <div class="table-container fade-in-up">
+            <div class="d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="fas fa-download text-primary"></i>
+                    Export des Données
+                </h5>
+                <div>
+                    <button class="btn btn-outline-primary me-2">
+                        <i class="fas fa-file-pdf"></i> Exporter PDF
+                    </button>
+                    <button class="btn btn-outline-success me-2">
+                        <i class="fas fa-file-excel"></i> Exporter Excel
+                    </button>
+                    <button class="btn btn-outline-info">
+                        <i class="fas fa-file-csv"></i> Exporter CSV
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Graphique des revenus par mois
+    const revenusCtx = document.getElementById('revenusChart').getContext('2d');
+    new Chart(revenusCtx, {
+        type: 'line',
+        data: {
+            labels: ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin'],
+            datasets: [{
+                label: 'Revenus (DH)',
+                data: [6500, 7200, 8100, 7800, 8500, 9200],
+                borderColor: '#1e3a5f',
+                backgroundColor: 'rgba(30, 58, 95, 0.1)',
+                borderWidth: 3,
+                tension: 0.4,
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return 'DH ' + value.toLocaleString();
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    // Graphique par catégorie
+    const categorieCtx = document.getElementById('categorieChart').getContext('2d');
+    new Chart(categorieCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Équitation', 'Balade en Mer', 'Stage'],
+            datasets: [{
+                data: [45, 30, 25],
+                backgroundColor: [
+                    '#1e3a5f',
+                    '#2c5282',
+                    '#4a90e2'
+                ],
+                borderWidth: 0
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }
+    });
+});
+</script>
+{% endblock %}

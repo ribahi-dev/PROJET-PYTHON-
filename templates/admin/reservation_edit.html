@@ -1,0 +1,69 @@
+{% extends "admin/base.html" %}
+{% block content %}
+<div class="container mt-4">
+  <h3>✏️ Modifier la Réservation</h3>
+  <div class="card p-4">
+    <form method="POST">
+          {% csrf_token %}
+          <div class="mb-3">
+            <label class="form-label">Client</label>
+              <input type="text"
+                     class="form-control"
+                     value="{{ reservation.user.username }}"
+                     disabled>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Activité</label>
+              <input type="text"
+                     class="form-control"
+                     value="{{ reservation.activite.nom }}"
+                     disabled>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Date réservation</label>
+            <input type="date"
+                   name="date_reservation"
+                   class="form-control"
+                   value="{{ reservation.date_reservation }}">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Nombre de personnes</label>
+            <input type="number"
+                   name="nombre_personnes"
+                   class="form-control"
+                   value="{{ reservation.nombre_personnes }}"
+                   min="1">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Statut</label>
+            <select name="statut" class="form-select">
+              <option value="en_attente"
+                {% if reservation.statut == 'en_attente' %}
+                  selected{% endif %}>
+                En attente
+              </option>
+              <option value="confirmee"
+                {% if reservation.statut == 'confirmee' %}
+                  selected{% endif %}>
+                Confirmée
+              </option>
+              <option value="annulee"
+                {% if reservation.statut == 'annulee' %}
+                  selected{% endif %}>
+                Annulée
+              </option>
+            </select>
+          </div>
+          <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-primary">
+              💾 Enregistrer
+            </button>
+            <a href="{% url 'admin_app:reservations' %}"
+               class="btn btn-secondary">
+              Annuler
+            </a>
+          </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

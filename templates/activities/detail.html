@@ -1,0 +1,295 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ activite.nom }} - Club Équitation & Balades en Mer{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <!-- Image principale -->
+        <div class="card mb-4">
+            {% if activite.image_url %}
+    <img src="{{ activite.image_url }}"
+         class="card-img-top"
+         style="height:220px; object-fit:cover;"
+         alt="{{ activite.nom }}">
+{% elif activite.image %}
+    <img src="{{ activite.image.url }}"
+         class="card-img-top"
+         style="height:220px; object-fit:cover;"
+         alt="{{ activite.nom }}">
+{% else %}
+    <div class="d-flex align-items-center
+                justify-content-center bg-light"
+         style="height:220px; font-size:5rem;">
+        {% if activite.categorie == 'mer' %}⛵
+        {% elif activite.categorie == 'stage' %}📚
+        {% else %}🐴{% endif %}
+    </div>
+{% endif %}
+        </div>
+
+        <!-- Description -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Description
+                </h5>
+            </div>
+            <div class="card-body">
+                <p class="card-text">{{ activite.description|linebreaks }}</p>
+            </div>
+        </div>
+
+        <!-- Informations détaillées -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-list-ul me-2"></i>
+                    Informations détaillées
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <ul class="list-unstyled">
+                            <li class="mb-3">
+                                <strong><i class="fas fa-tag me-2"></i>Catégorie:</strong>
+                                <span class="badge ms-2">
+                                    {% if activite.categorie == 'equitation' %}
+                                        style="background:#1a2744"
+                                    {% elif activite.categorie == 'mer' %}
+                                        style="background:#0891b2"
+                                    {% else %}
+                                        style="background:#2d6a1f"
+                                    {% endif %}
+                                >
+                                    {{ activite.get_categorie_display }}
+                                </span>
+                            </li>
+                            <li class="mb-3">
+                                <strong><i class="fas fa-clock me-2"></i>Durée:</strong> {{ activite.duree }}
+                            </li>
+                            <li class="mb-3">
+                                <strong><i class="fas fa-users me-2"></i>Places maximum:</strong> {{ activite.places_max }}
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <ul class="list-unstyled">
+                            <li class="mb-3">
+                                <strong><i class="fas fa-money-bill-wave me-2"></i>Prix:</strong> 
+                                <span class="text-primary fw-bold">{{ activite.prix }} DH</span>
+                            </li>
+                            <li class="mb-3">
+                                <strong><i class="fas fa-check-circle me-2"></i>Disponibilité:</strong>
+                                {% if activite.disponible %}
+                                    <span class="badge bg-success ms-2">Disponible</span>
+                                {% else %}
+                                    <span class="badge bg-secondary ms-2">Indisponible</span>
+                                {% endif %}
+                            </li>
+                            <li class="mb-3">
+                                <strong><i class="fas fa-calendar-plus me-2"></i>Ajoutée le:</strong> 
+                                {{ activite.created_at|date:"d/m/Y à H:i" }}
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <!-- Carte de réservation -->
+        <div class="card sticky-top" style="top: 20px;">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-calendar-check me-2"></i>
+                    Réserver cette activité
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if user.is_authenticated %}
+                    {% if activite.disponible %}
+                        <div class="text-center mb-4">
+                            <div class="display-4 text-primary fw-bold">{{ activite.prix }} DH</div>
+                            <small class="text-muted">par personne</small>
+                        </div>
+                        
+                        <form method="POST"
+                              action="{% url 'reservations:reservation-create' %}">
+                          {% csrf_token %}
+                          <input type="hidden"
+                                 name="activite"
+                                 value="{{ activite.pk }}">
+                          <div class="mb-3">
+                            <label>Date souhaitée</label>
+                            <input type="date"
+                                   name="date_reservation"
+                                   class="form-control"
+                                   required>
+                          </div>
+                          <div class="mb-3">
+                            <label>Nombre de participants</label>
+                            <input type="number"
+                                   name="nombre_personnes"
+                                   class="form-control"
+                                   min="1"
+                                   max="{{ activite.places_max }}"
+                                   value="1"
+                                   required>
+                          </div>
+                          <button type="submit" class="btn btn-primary w-100">
+                            ✅ Confirmer la réservation
+                          </button>
+                        </form>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-times-circle fa-3x text-danger mb-3"></i>
+                            <h6>Activité indisponible</h6>
+                            <p class="text-muted">Cette activité n'est pas disponible pour le moment.</p>
+                        </div>
+                    {% endif %}
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-user-lock fa-3x text-warning mb-3"></i>
+                        <h6>Connexion requise</h6>
+                        <p class="text-muted">Vous devez être connecté pour réserver cette activité.</p>
+                        <div class="d-grid gap-2">
+                            <a href="{% url 'login' %}" class="btn btn-primary">
+                                <i class="fas fa-sign-in-alt me-2"></i>Se connecter
+                            </a>
+                            <a href="{% url 'signup' %}" class="btn btn-outline-primary">
+                                <i class="fas fa-user-plus me-2"></i>Créer un compte
+                            </a>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Activités similaires -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="fas fa-thumbs-up me-2"></i>
+                    Activités similaires
+                </h6>
+            </div>
+            <div class="card-body">
+                <p class="text-muted small">
+                    Découvrez d'autres activités dans la même catégorie.
+                </p>
+                <a href="{% url 'activities:activite-list' %}?categorie={{ activite.categorie }}" class="btn btn-outline-primary btn-sm">
+                    <i class="fas fa-search me-1"></i>Voir les activités {{ activite.get_categorie_display }}
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Breadcrumb -->
+<nav aria-label="breadcrumb" class="mt-4">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item">
+            <a href="{% url 'home' %}" class="text-decoration-none">
+                <i class="fas fa-home me-1"></i>Accueil
+            </a>
+        </li>
+        <li class="breadcrumb-item">
+            <a href="{% url 'activities:activite-list' %}" class="text-decoration-none">
+                Activités
+            </a>
+        </li>
+        <li class="breadcrumb-item active">{{ activite.nom }}</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.sticky-top {
+    position: sticky;
+}
+
+.card-img-top {
+    border-top-left-radius: calc(0.5rem - 1px);
+    border-top-right-radius: calc(0.5rem - 1px);
+}
+
+.display-4 {
+    font-size: 2.5rem;
+}
+
+.breadcrumb {
+    background-color: transparent;
+    padding: 0;
+}
+
+.breadcrumb-item + .breadcrumb-item::before {
+    content: ">";
+    color: #6c757d;
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Configuration du champ date
+    const dateInput = document.getElementById('date');
+    if (dateInput) {
+        // Date minimum = aujourd'hui
+        const today = new Date().toISOString().split('T')[0];
+        dateInput.setAttribute('min', today);
+        
+        // Date maximum = 3 mois dans le futur
+        const maxDate = new Date();
+        maxDate.setMonth(maxDate.getMonth() + 3);
+        dateInput.setAttribute('max', maxDate.toISOString().split('T')[0]);
+    }
+    
+    // Validation du formulaire
+    const reservationForm = document.getElementById('reservationForm');
+    if (reservationForm) {
+        reservationForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const date = document.getElementById('date').value;
+            const participants = document.getElementById('participants').value;
+            
+            if (!date) {
+                return;
+            }
+            
+            // Simulation de réservation
+            const submitBtn = this.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            
+            submitBtn.innerHTML = '<span class="spinner me-2"></span>Réservation en cours...';
+            submitBtn.disabled = true;
+            
+            setTimeout(() => {
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+                this.reset();
+            }, 2000);
+        });
+    }
+    
+    // Animation des éléments
+    const cards = document.querySelectorAll('.card');
+    cards.forEach((card, index) => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        
+        setTimeout(() => {
+            card.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+            card.style.opacity = '1';
+            card.style.transform = 'translateY(0)';
+        }, index * 100);
+    });
+});
+</script>
+{% endblock %}

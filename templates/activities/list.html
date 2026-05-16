@@ -1,0 +1,238 @@
+{% extends 'base.html' %}
+
+{% block title %}Activités - Club Équitation & Balades en Mer{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center">
+            <h1>
+                <i class="fas fa-calendar-alt me-2"></i>
+                Nos Activités
+            </h1>
+            {% if user.is_authenticated %}
+                <a href="#" class="btn btn-primary">
+                    <i class="fas fa-plus me-2"></i>Réserver une activité
+                </a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Filtres par catégorie -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title mb-3">
+                    <i class="fas fa-filter me-2"></i>
+                    Filtrer par catégorie
+                </h5>
+                <div class="btn-group" role="group">
+                    <a href="?categorie=" class="btn {% if not categorie_active %}btn-primary{% else %}btn-outline-primary{% endif %}">
+                        <i class="fas fa-th me-1"></i>Toutes
+                    </a>
+                    {% for cat_value, cat_label in categories %}
+                        <a href="?categorie={{ cat_value }}" class="btn {% if categorie_active == cat_value %}btn-primary{% else %}btn-outline-primary{% endif %}">
+                            {% if cat_value == 'equitation' %}<i class="fas fa-horse me-1"></i>{% endif %}
+                            {% if cat_value == 'mer' %}<i class="fas fa-ship me-1"></i>{% endif %}
+                            {% if cat_value == 'stage' %}<i class="fas fa-graduation-cap me-1"></i>{% endif %}
+                            {{ cat_label }}
+                        </a>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Liste des activités -->
+<div class="row">
+    {% for activite in activites %}
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card h-100 shadow-sm activity-card">
+                {% if activite.image_url %}
+    <img src="{{ activite.image_url }}"
+         class="card-img-top"
+         style="height:220px; object-fit:cover;"
+         alt="{{ activite.nom }}">
+{% elif activite.image %}
+    <img src="{{ activite.image.url }}"
+         class="card-img-top"
+         style="height:220px; object-fit:cover;"
+         alt="{{ activite.nom }}">
+{% else %}
+    <div class="d-flex align-items-center
+                justify-content-center bg-light"
+         style="height:220px; font-size:5rem;">
+        {% if activite.categorie == 'mer' %}⛵
+        {% elif activite.categorie == 'stage' %}📚
+        {% else %}🐴{% endif %}
+    </div>
+{% endif %}
+                
+                <div class="card-body d-flex flex-column">
+                    <div class="mb-2">
+                        {% if activite.categorie == 'equitation' %}
+                            <span class="badge" style="background:#1a2744">
+                        {% elif activite.categorie == 'mer' %}
+                            <span class="badge" style="background:#0891b2">
+                        {% else %}
+                            <span class="badge" style="background:#2d6a1f">
+                        {% endif %}
+                            {{ activite.get_categorie_display }}
+                        </span>
+                        {% if activite.disponible %}
+                            <span class="badge bg-success">Disponible</span>
+                        {% else %}
+                            <span class="badge bg-secondary">Indisponible</span>
+                        {% endif %}
+                    </div>
+                    
+                    <h5 class="card-title">{{ activite.nom }}</h5>
+                    <p class="card-text flex-grow-1">{{ activite.description|truncatewords:20 }}</p>
+                    
+                    <div class="row text-center mb-3">
+                        <div class="col-4">
+                            <small class="text-muted">Durée</small>
+                            <div class="fw-bold">{{ activite.duree }}</div>
+                        </div>
+                        <div class="col-4">
+                            <small class="text-muted">Places</small>
+                            <div class="fw-bold">{{ activite.places_max }}</div>
+                        </div>
+                        <div class="col-4">
+                            <small class="text-muted">Prix</small>
+                            <div class="fw-bold text-primary">{{ activite.prix }} DH</div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid">
+                        <a href="{% url 'activities:activite-detail' pk=activite.pk %}" class="btn btn-outline-primary">
+                            <i class="fas fa-eye me-2"></i>Voir les détails
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="card-footer text-muted small">
+                    <i class="fas fa-clock me-1"></i>
+                    Ajoutée le {{ activite.created_at|date:"d/m/Y" }}
+                </div>
+            </div>
+        </div>
+    {% empty %}
+        <div class="col-12">
+            <div class="text-center py-5">
+                <i class="fas fa-search fa-3x text-muted mb-3"></i>
+                <h4>Aucune activité trouvée</h4>
+                <p class="text-muted">
+                    {% if categorie_active %}
+                        Aucune activité dans la catégorie
+                        {% if categorie_active == 'equitation' %}
+                            Équitation
+                        {% elif categorie_active == 'mer' %}
+                            Balade en Mer
+                        {% else %}
+                            Stage
+                        {% endif %}
+                        .
+                    {% else %}
+                        Aucune activité disponible pour le moment.
+                    {% endif %}
+                </p>
+                <a href="?categorie=" class="btn btn-primary">
+                    <i class="fas fa-redo me-2"></i>Voir toutes les activités
+                </a>
+            </div>
+        </div>
+    {% endfor %}
+</div>
+
+<!-- Pagination -->
+{% if is_paginated %}
+    <nav aria-label="Pagination des activités">
+        <ul class="pagination justify-content-center">
+            {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if categorie_active %}&categorie={{ categorie_active }}{% endif %}">
+                        <i class="fas fa-chevron-left"></i>
+                    </a>
+                </li>
+            {% endif %}
+            
+            {% for num in page_obj.paginator.page_range %}
+                {% if page_obj.number == num %}
+                    <li class="page-item active">
+                        <span class="page-link">{{ num }}</span>
+                    </li>
+                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ num }}{% if categorie_active %}&categorie={{ categorie_active }}{% endif %}">{{ num }}</a>
+                    </li>
+                {% endif %}
+            {% endfor %}
+            
+            {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if categorie_active %}&categorie={{ categorie_active }}{% endif %}">
+                        <i class="fas fa-chevron-right"></i>
+                    </a>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
+{% endif %}
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.activity-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.activity-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 25px rgba(0, 0, 0, 0.15);
+}
+
+.card-img-top {
+    border-top-left-radius: calc(0.5rem - 1px);
+    border-top-right-radius: calc(0.5rem - 1px);
+}
+
+.badge {
+    font-size: 0.75rem;
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Animation pour les cartes
+    const cards = document.querySelectorAll('.activity-card');
+    cards.forEach((card, index) => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        
+        setTimeout(() => {
+            card.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+            card.style.opacity = '1';
+            card.style.transform = 'translateY(0)';
+        }, index * 100);
+    });
+    
+    // Gestion des filtres
+    const filterButtons = document.querySelectorAll('.btn-group .btn');
+    filterButtons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            if (this.getAttribute('href').includes('categorie=')) {
+                // Animation de chargement
+                const activitiesContainer = document.querySelector('.row');
+                activitiesContainer.style.opacity = '0.5';
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,163 @@
+{% extends 'moniteur/base.html' %}
+
+{% block title %}Gestion des Présences - Espace Moniteur ÉquiClub{% endblock %}
+
+{% block page_title %}Gestion des Présences{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="planning-grid fade-in-up">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h5>
+                    <i class="fas fa-user-check text-primary"></i>
+                    Séances Disponibles
+                </h5>
+                <div>
+                    <button class="btn btn-outline-primary me-2" onclick="exportPresences()">
+                        <i class="fas fa-download"></i> Exporter
+                    </button>
+                </div>
+            </div>
+            
+            {% if plannings %}
+                {% for planning in plannings %}
+                <div class="session-card">
+                    <div class="row align-items-center">
+                        <div class="col-md-3">
+                            <div class="d-flex align-items-center">
+                                <div class="me-3">
+                                    <i class="fas fa-calendar-day fa-2x text-primary"></i>
+                                </div>
+                                <div>
+                                    <strong>{{ planning.get_jour_display }}</strong>
+                                    <div class="text-muted">{{ planning.heure_debut }} - {{ planning.heure_fin }}</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="session-activity">{{ planning.activite.nom }}</div>
+                            <small class="text-muted">{{ planning.activite.get_categorie_display }}</small>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-users text-success me-2"></i>
+                                {% with participants=planning.activite.reservation_set.count %}
+                                    <span>{{ participants }} participants</span>
+                                {% endwith %}
+                            </div>
+                        </div>
+                        <div class="col-md-2 text-end">
+                            <a href="{% url 'moniteur_presences_detail' planning.id %}" class="btn btn-primary-custom">
+                                <i class="fas fa-clipboard-check"></i>
+                                Gérer
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-clipboard-list fa-4x text-muted mb-3"></i>
+                    <h5 class="text-muted">Aucune séance trouvée</h5>
+                    <p class="text-muted">Vous n'avez aucune séance assignée pour le moment.</p>
+                    <a href="{% url 'moniteur_planning' %}" class="btn btn-primary-custom">
+                        <i class="fas fa-calendar-alt"></i> Voir mon planning
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+{% if planning_selectionne %}
+<div class="table-container mt-4">
+    <h5>
+        <i class="fas fa-users text-primary"></i>
+        Participants - {{ planning_selectionne.activite.nom }}
+        ({{ planning_selectionne.get_jour_display }} 
+        {{ planning_selectionne.heure_debut|time:"H:i" }} - 
+        {{ planning_selectionne.heure_fin|time:"H:i" }})
+    </h5>
+    <div class="table-responsive mt-3">
+        <table class="table table-hover">
+            <thead class="table-success">
+                <tr>
+                    <th>Client</th>
+                    <th>Email</th>
+                    <th>Statut réservation</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for reservation in reservations %}
+                <tr>
+                    <td>
+                        <strong>{{ reservation.user.get_full_name|default:reservation.user.username }}</strong>
+                    </td>
+                    <td>{{ reservation.user.email }}</td>
+                    <td>
+                        <span class="badge 
+                            {% if reservation.statut == 'confirme' %}bg-success
+                            {% elif reservation.statut == 'en_attente' %}bg-warning
+                            {% else %}bg-danger{% endif %}">
+                            {{ reservation.statut }}
+                        </span>
+                    </td>
+                    <td>
+                        <a href="{% url 'marquer_presence' planning_selectionne.id reservation.user.id 'present' %}" 
+                           class="btn btn-sm btn-success me-1">
+                            <i class="fas fa-check"></i> Présent
+                        </a>
+                        <a href="{% url 'marquer_presence' planning_selectionne.id reservation.user.id 'absent' %}" 
+                           class="btn btn-sm btn-danger">
+                            <i class="fas fa-times"></i> Absent
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="4" class="text-center text-muted py-3">
+                        Aucun participant pour cette séance
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+
+<!-- Statistiques -->
+<div class="row mt-4">
+    <div class="col-md-4">
+        <div class="session-card text-center">
+            <i class="fas fa-users fa-2x text-primary mb-2"></i>
+            <h4>156</h4>
+            <p class="text-muted mb-0">Total participants ce mois</p>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="session-card text-center">
+            <i class="fas fa-user-check fa-2x text-success mb-2"></i>
+            <h4>92%</h4>
+            <p class="text-muted mb-0">Taux de présence</p>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="session-card text-center">
+            <i class="fas fa-calendar-check fa-2x text-warning mb-2"></i>
+            <h4>24</h4>
+            <p class="text-muted mb-0">Séances ce mois</p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function exportPresences() {
+    alert('Fonctionnalité d\'export bientôt disponible');
+}
+</script>
+{% endblock %}

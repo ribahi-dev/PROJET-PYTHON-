@@ -1,0 +1,273 @@
+<!-- User Profile Modal -->
+<div class="modal fade" id="userProfileModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-user"></i>
+                    Profil Utilisateur #<span id="user-id"></span>
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Loading state -->
+                <div id="user-loading" class="text-center py-4" style="display: none;">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Chargement...</span>
+                    </div>
+                    <p class="mt-2">Chargement du profil utilisateur...</p>
+                </div>
+
+                <!-- Error state -->
+                <div id="user-error" class="alert alert-danger" style="display: none;">
+                    <strong>Erreur:</strong> <span id="user-error-message"></span>
+                </div>
+
+                <!-- User details -->
+                <div id="user-details" style="display: none;">
+                    <div class="row">
+                        <!-- Left Side: User Info -->
+                        <div class="col-md-8">
+                            <div class="card mb-3">
+                                <div class="card-header bg-info text-white">
+                                    <h6 class="mb-0">👤 Informations Utilisateur</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <strong>Nom d'utilisateur:</strong>
+                                                <span id="user-username"></span>
+                                            </div>
+                                            <div class="mb-3">
+                                                <strong>Nom complet:</strong>
+                                                <span id="user-fullname"></span>
+                                            </div>
+                                            <div class="mb-3">
+                                                <strong>Email:</strong>
+                                                <span id="user-email"></span>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <strong>Rôle:</strong>
+                                                <span id="user-role"></span>
+                                            </div>
+                                            <div class="mb-3">
+                                                <strong>Statut:</strong>
+                                                <span id="user-status" class="badge"></span>
+                                            </div>
+                                            <div class="mb-3">
+                                                <strong>Date d'inscription:</strong>
+                                                <span id="user-date-joined"></span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Right Side: Avatar -->
+                        <div class="col-md-4">
+                            <div class="card">
+                                <div class="card-header bg-success text-white">
+                                    <h6 class="mb-0">📷 Photo de Profil</h6>
+                                </div>
+                                <div class="card-body text-center">
+                                    <div id="user-avatar" class="mb-3">
+                                        <!-- User avatar will be inserted here -->
+                                        <i class="fas fa-user-circle fa-5x text-muted"></i>
+                                    </div>
+                                    <div class="alert alert-info">
+                                        <small>
+                                            <strong>ID Utilisateur:</strong> <span id="user-profile-id"></span>
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    Fermer
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Print Styles -->
+<style>
+@media print {
+    body * {
+        visibility: hidden;
+    }
+    #userProfileModal, #userProfileModal * {
+        visibility: visible;
+    }
+    #userProfileModal {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+    }
+    .modal-footer {
+        display: none !important;
+    }
+    .btn-close {
+        display: none !important;
+    }
+}
+</style>
+
+<script>
+let currentUserId = null;
+let currentUserModal = null;
+
+// Function to open user profile modal
+function openUserProfileModal(userId) {
+    console.log('=== OPENING USER PROFILE MODAL ===');
+    console.log('User ID:', userId);
+    
+    currentUserId = userId;
+    
+    // Get modal element
+    const modalElement = document.getElementById('userProfileModal');
+    if (!modalElement) {
+        console.error('Modal element not found!');
+        return;
+    }
+    
+    // Show loading state
+    document.getElementById('user-loading').style.display = 'block';
+    document.getElementById('user-error').style.display = 'none';
+    document.getElementById('user-details').style.display = 'none';
+    
+    console.log('Loading user profile...');
+    
+    // Fetch user details from API
+    console.log('Fetching from API:', `/api/users/${userId}/`);
+    
+    fetch(`/api/users/${userId}/`)
+        .then(response => {
+            console.log('API Response status:', response.status);
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log('=== USER DATA RECEIVED ===');
+            console.log('Full data object:', data);
+            
+            // Hide loading state
+            document.getElementById('user-loading').style.display = 'none';
+            
+            // Check if data is valid
+            if (!data || typeof data !== 'object') {
+                throw new Error('Invalid data received from API');
+            }
+            
+            // Show user details
+            document.getElementById('user-details').style.display = 'block';
+            
+            // Populate modal with user data
+            console.log('Populating user profile fields...');
+            
+            const userId = data.id || 'N/A';
+            const username = data.username || 'N/A';
+            const fullName = `${data.first_name || ''} ${data.last_name || ''}`.trim();
+            const email = data.email || 'N/A';
+            const role = data.role || 'N/A';
+            const dateJoined = data.date_joined || 'N/A';
+            const isActive = data.is_active || false;
+            
+            console.log('Field values:', {
+                userId, username, fullName, email, role, dateJoined, isActive
+            });
+            
+            // Set field values
+            document.getElementById('user-id').textContent = userId;
+            document.getElementById('user-username').textContent = username;
+            document.getElementById('user-fullname').textContent = fullName;
+            document.getElementById('user-email').textContent = email;
+            document.getElementById('user-role').textContent = role;
+            document.getElementById('user-date-joined').textContent = dateJoined ? new Date(dateJoined).toLocaleString('fr-FR') : 'N/A';
+            document.getElementById('user-profile-id').textContent = userId;
+            
+            // Set status badge
+            const statusElement = document.getElementById('user-status');
+            statusElement.textContent = isActive ? 'Actif' : 'Inactif';
+            statusElement.className = 'badge';
+            
+            if (isActive) {
+                statusElement.classList.add('bg-success');
+            } else {
+                statusElement.classList.add('bg-danger');
+            }
+            
+            // Set avatar placeholder
+            const avatarContainer = document.getElementById('user-avatar');
+            avatarContainer.innerHTML = '<i class="fas fa-user-circle fa-5x text-muted"></i>';
+            
+            console.log('User profile modal populated successfully');
+            
+            // Show modal
+            try {
+                currentUserModal = new bootstrap.Modal(modalElement);
+                currentUserModal.show();
+                console.log('User profile modal shown successfully');
+            } catch (modalError) {
+                console.error('Error showing user profile modal:', modalError);
+                showUserError('Erreur lors de l\'ouverture de la modal: ' + modalError.message);
+            }
+        })
+        .catch(error => {
+            console.error('=== API ERROR ===');
+            console.error('Error details:', error);
+            
+            // Hide loading state
+            document.getElementById('user-loading').style.display = 'none';
+            
+            // Show error message
+            showUserError('Erreur lors du chargement du profil utilisateur: ' + error.message);
+        });
+}
+
+// Function to show error
+function showUserError(message) {
+    document.getElementById('user-loading').style.display = 'none';
+    document.getElementById('user-details').style.display = 'none';
+    document.getElementById('user-error').style.display = 'block';
+    document.getElementById('user-error-message').textContent = message;
+}
+
+// Initialize when DOM is ready
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('=== USER PROFILE MODAL INITIALIZED ===');
+    
+    // Add click event to view icons in admin users list
+    const viewIcons = document.querySelectorAll('.fa-eye').forEach(icon => {
+        console.log('Found view icon:', icon);
+        icon.parentElement.addEventListener('click', function(e) {
+            e.preventDefault();
+            console.log('View icon clicked');
+            
+            const userId = this.getAttribute('data-user-id');
+            console.log('User ID from attribute:', userId);
+            
+            if (userId) {
+                openUserProfileModal(userId);
+            } else {
+                console.error('No user ID found on view icon');
+                alert('Erreur: ID utilisateur non trouvé');
+            }
+        });
+    });
+    
+    console.log('View icon event listeners added');
+});
+</script>

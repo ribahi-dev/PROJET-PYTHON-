@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}Mes Réservations{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+
+  <h2 class="mb-4">📅 Mes Réservations</h2>
+
+  {% if reservations %}
+    {% for r in reservations %}
+    <div class="card mb-3 shadow-sm">
+
+      <div class="card-header fw-bold"
+           style="background:#1a2744; color:white;">
+        🐴 {{ r.activite.nom }}
+      </div>
+
+      <div class="card-body">
+        <p><strong>📅 Date :</strong> {{ r.date_reservation }}</p>
+        <p><strong>👥 Personnes :</strong> {{ r.nombre_personnes }}</p>
+        <p><strong>💰 Prix :</strong> {{ r.activite.prix }} DH</p>
+        <p><strong>📌 Statut :</strong>
+          {% if r.statut == 'confirmee' %}
+            <span class="badge bg-success">✅ Confirmée</span>
+          {% elif r.statut == 'en_attente' %}
+            <span class="badge bg-warning text-dark">⏳ En attente</span>
+          {% else %}
+            <span class="badge bg-danger">❌ Annulée</span>
+          {% endif %}
+        </p>
+      </div>
+
+      <div class="card-footer d-flex gap-2">
+        <a href="{% url 'tickets:ticket-list' %}"
+           class="btn btn-sm btn-primary">
+          🎫 Voir mon ticket
+        </a>
+        {% if r.statut != 'annulee' %}
+        <form method="POST"
+              action="{% url 'reservations:reservation-cancel' pk=r.pk %}">
+          {% csrf_token %}
+          <button type="submit"
+                  class="btn btn-sm btn-danger"
+                  onclick="return confirm('Annuler cette réservation ?')">
+            ❌ Annuler
+          </button>
+        </form>
+        {% endif %}
+      </div>
+
+    </div>
+    {% endfor %}
+
+  {% else %}
+    <div class="alert alert-info text-center">
+      <h5>Aucune réservation pour le moment.</h5>
+      <a href="{% url 'activities:activite-list' %}"
+         class="btn btn-primary mt-2">
+        🐴 Voir les activités
+      </a>
+    </div>
+  {% endif %}
+
+</div>
+{% endblock %}

@@ -1,0 +1,232 @@
+{% extends 'moniteur/base.html' %}
+
+{% block title %}Présences - {{ planning.activite.nom }} - Espace Moniteur ÉquiClub{% endblock %}
+
+{% block page_title %}Présences - {{ planning.activite.nom }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="planning-grid fade-in-up">
+            <!-- Infos de la séance -->
+            <div class="session-card mb-4">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h5 class="mb-2">{{ planning.activite.nom }}</h5>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <i class="fas fa-calendar-day text-primary"></i>
+                                <strong>{{ planning.get_jour_display }}</strong>
+                            </div>
+                            <div class="col-md-4">
+                                <i class="fas fa-clock text-success"></i>
+                                <strong>{{ planning.heure_debut }} - {{ planning.heure_fin }}</strong>
+                            </div>
+                            <div class="col-md-4">
+                                <i class="fas fa-users text-warning"></i>
+                                <strong>{{ clients_data|length }} participants</strong>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 text-end">
+                        <button class="btn btn-outline-primary me-2" onclick="window.print()">
+                            <i class="fas fa-print"></i> Imprimer
+                        </button>
+                        <button class="btn btn-success" onclick="validerToutesPresences()">
+                            <i class="fas fa-check-double"></i> Valider tout
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Liste des participants -->
+            <h6 class="mb-3">
+                <i class="fas fa-users"></i> Liste des Participants
+            </h6>
+            
+            {% if clients_data %}
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Participant</th>
+                                <th>Email</th>
+                                <th>Téléphone</th>
+                                <th>Statut</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in clients_data %}
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="user-avatar me-3" style="width: 35px; height: 35px; font-size: 0.8rem;">
+                                            {{ item.client.username|first|upper }}
+                                        </div>
+                                        <div>
+                                            <strong>{{ item.client.get_full_name|default:item.client.username }}</strong>
+                                            <br>
+                                            <small class="text-muted">@{{ item.client.username }}</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>{{ item.client.email }}</td>
+                                <td>
+                                    {% if item.client.profile.phone %}
+                                        {{ item.client.profile.phone }}
+                                    {% else %}
+                                        <span class="text-muted">Non renseigné</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <span class="presence-badge {{ item.statut }}" 
+                                          onclick="changerStatut({{ planning.id }}, {{ item.client.id }}, 'present')"
+                                          title="Cliquer pour changer le statut">
+                                        {% if item.statut == 'present' %}
+                                            <i class="fas fa-check-circle"></i> Présent
+                                        {% elif item.statut == 'retard' %}
+                                            <i class="fas fa-clock"></i> Retard
+                                        {% else %}
+                                            <i class="fas fa-times-circle"></i> Absent
+                                        {% endif %}
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <button class="btn btn-sm btn-outline-success" 
+                                                onclick="marquerPresence({{ planning.id }}, {{ item.client.id }}, 'present')"
+                                                title="Marquer présent">
+                                            <i class="fas fa-check"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-warning" 
+                                                onclick="marquerPresence({{ planning.id }}, {{ item.client.id }}, 'retard')"
+                                                title="Marquer en retard">
+                                            <i class="fas fa-clock"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-danger" 
+                                                onclick="marquerPresence({{ planning.id }}, {{ item.client.id }}, 'absent')"
+                                                title="Marquer absent">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Résumé des présences -->
+                <div class="row mt-4">
+                    <div class="col-md-4">
+                        <div class="session-card text-center">
+                            <div class="text-success">
+                                <i class="fas fa-check-circle fa-2x mb-2"></i>
+                            </div>
+                            <h4 id="countPresent">0</h4>
+                            <p class="text-muted mb-0">Présents</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="session-card text-center">
+                            <div class="text-warning">
+                                <i class="fas fa-clock fa-2x mb-2"></i>
+                            </div>
+                            <h4 id="countRetard">0</h4>
+                            <p class="text-muted mb-0">Retards</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="session-card text-center">
+                            <div class="text-danger">
+                                <i class="fas fa-times-circle fa-2x mb-2"></i>
+                            </div>
+                            <h4 id="countAbsent">0</h4>
+                            <p class="text-muted mb-0">Absents</p>
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-users-slash fa-4x text-muted mb-3"></i>
+                    <h5 class="text-muted">Aucun participant inscrit</h5>
+                    <p class="text-muted">Personne n'a réservé cette séance pour le moment.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    updateCounts();
+});
+
+function updateCounts() {
+    let present = 0;
+    let retard = 0;
+    let absent = 0;
+    
+    document.querySelectorAll('.presence-badge').forEach(badge => {
+        if (badge.classList.contains('present')) present++;
+        else if (badge.classList.contains('retard')) retard++;
+        else absent++;
+    });
+    
+    document.getElementById('countPresent').textContent = present;
+    document.getElementById('countRetard').textContent = retard;
+    document.getElementById('countAbsent').textContent = absent;
+}
+
+function marquerPresence(planningId, clientId, statut) {
+    const url = '/moniteur/presences/' + planningId + '/' + clientId + '/' + statut + '/';
+    window.location.href = url;
+}
+
+function changerStatut(planningId, clientId, currentStatut) {
+    let nextStatut;
+    if (currentStatut === 'present') {
+        nextStatut = 'retard';
+    } else if (currentStatut === 'retard') {
+        nextStatut = 'absent';
+    } else {
+        nextStatut = 'present';
+    }
+    marquerPresence(planningId, clientId, nextStatut);
+}
+
+function validerToutesPresences() {
+    if (confirm('Voulez-vous marquer tous les participants comme présents ?')) {
+        const participants = [
+            {% for item in clients_data %}
+            {{ item.client.id }}{% if not forloop.last %},{% endif %}
+            {% endfor %}
+        ];
+        participants.forEach(clientId => {
+            marquerPresence({{ planning.id }}, clientId, 'present');
+        });
+    }
+}
+
+// Style pour l'impression
+const style = document.createElement('style');
+style.textContent = `
+    @media print {
+        .sidebar, .top-bar, .btn-group, .presence-badge {
+            display: none !important;
+        }
+        .main-content {
+            margin-left: 0 !important;
+            padding: 20px !important;
+        }
+        .table {
+            font-size: 12px;
+        }
+    }
+`;
+document.head.appendChild(style);
+</script>
+{% endblock %}

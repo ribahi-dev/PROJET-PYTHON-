@@ -1,0 +1,240 @@
+{% extends 'base.html' %}
+
+{% block title %}Détail Réservation - {{ reservation.activite.nom }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <!-- Détails de la réservation -->
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-calendar-check me-2"></i>
+                    Détails de la réservation
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Informations sur l'activité</h6>
+                        <table class="table table-borderless">
+                            <tr>
+                                <td><strong>Activité:</strong></td>
+                                <td>{{ reservation.activite.nom }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Catégorie:</strong></td>
+                                <td>
+                                    {% if reservation.activite.categorie == 'equitation' %}
+                                        <span class="badge" style="background:#1a2744">
+                                    {% elif reservation.activite.categorie == 'mer' %}
+                                        <span class="badge" style="background:#0891b2">
+                                    {% else %}
+                                        <span class="badge" style="background:#2d6a1f">
+                                    {% endif %}
+                                        {{ reservation.activite.get_categorie_display }}
+                                    </span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>Durée:</strong></td>
+                                <td>{{ reservation.activite.duree }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Prix unitaire:</strong></td>
+                                <td class="text-primary fw-bold">{{ reservation.activite.prix }} DH</td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Informations sur la réservation</h6>
+                        <table class="table table-borderless">
+                            <tr>
+                                <td><strong>Date:</strong></td>
+                                <td>{{ reservation.date_reservation|date:"l d F Y" }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Participants:</strong></td>
+                                <td>{{ reservation.nombre_personnes }} personne{{ reservation.nombre_personnes|pluralize }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Prix total:</strong></td>
+                                <td class="text-success fw-bold">{{ reservation.activite.prix|mul:reservation.nombre_personnes }} DH</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Statut:</strong></td>
+                                <td>
+                                    {% if reservation.statut == 'en_attente' %}
+                                        <span class="badge bg-warning">
+                                    {% elif reservation.statut == 'confirmee' %}
+                                        <span class="badge bg-success">
+                                    {% else %}
+                                        <span class="badge bg-danger">
+                                    {% endif %}
+                                        {{ reservation.get_statut_display }}
+                                    </span>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+                
+                <hr>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>Réservée par:</strong> {{ reservation.user.username }}</p>
+                        <p><strong>Date de réservation:</strong> {{ reservation.created_at|date:"d/m/Y à H:i" }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Référence:</strong> #{{ reservation.pk|stringformat:"06d" }}</p>
+                        <p><strong>Email:</strong> {{ reservation.user.email }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Description de l'activité -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Description de l'activité
+                </h6>
+            </div>
+            <div class="card-body">
+                <p>{{ reservation.activite.description }}</p>
+            </div>
+        </div>
+
+        <!-- Actions -->
+        {% if reservation.statut != 'annulee' %}
+            <div class="card">
+                <div class="card-body">
+                    <h6 class="card-title">Actions</h6>
+                    <div class="d-flex gap-2">
+                        <form action="{% url 'reservations:reservation-cancel' reservation.pk %}" method="post" onsubmit="return confirm('Êtes-vous sûr de vouloir annuler cette réservation ? Cette action est irréversible.')">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-danger">
+                                <i class="fas fa-times me-2"></i>Annuler la réservation
+                            </button>
+                        </form>
+                        <a href="{% url 'activities:activite-detail' reservation.activite.pk %}" class="btn btn-outline-primary">
+                            <i class="fas fa-eye me-2"></i>Voir l'activité
+                        </a>
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <div class="card border-danger">
+                <div class="card-body text-center">
+                    <i class="fas fa-exclamation-triangle fa-2x text-danger mb-2"></i>
+                    <h6>Réservation annulée</h6>
+                    <p class="text-muted">Cette réservation a été annulée et ne peut plus être modifiée.</p>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+
+    <div class="col-md-4">
+        <!-- Informations importantes -->
+        <div class="card mb-4">
+            <div class="card-header bg-info text-white">
+                <h6 class="mb-0">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Informations importantes
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <h6>Présentation</h6>
+                    <p class="small">Veuillez vous présenter 15 minutes avant l'heure prévue.</p>
+                </div>
+                <div class="mb-3">
+                    <h6>Équipement</h6>
+                    <p class="small">L'équipement de base est fourni. Prévoyez des vêtements confortables.</p>
+                </div>
+                <div class="mb-3">
+                    <h6>Conditions</h6>
+                    <p class="small">En cas de mauvais temps, l'activité pourra être reportée.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Contact -->
+        <div class="card mb-4">
+            <div class="card-header bg-secondary text-white">
+                <h6 class="mb-0">
+                    <i class="fas fa-phone me-2"></i>
+                    Contact
+                </h6>
+            </div>
+            <div class="card-body">
+                <p class="small mb-2"><strong>Téléphone:</strong> +33 1 23 45 67 89</p>
+                <p class="small mb-2"><strong>Email:</strong> contact@equiclub.fr</p>
+                <p class="small"><strong>Adresse:</strong> 123 Route de la Mer, 75000 Paris</p>
+            </div>
+        </div>
+
+        <!-- Ticket associé -->
+        {% if reservation.ticket %}
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h6 class="mb-0">
+                        <i class="fas fa-ticket-alt me-2"></i>
+                        Ticket associé
+                    </h6>
+                </div>
+                <div class="card-body text-center">
+                    <div class="mb-3">
+                        <span class="badge bg-success fs-6">{{ reservation.ticket.code }}</span>
+                    </div>
+                    <p class="small text-muted mb-0">Présentez ce code le jour de l'activité</p>
+                    <a href="{% url 'tickets:ticket-detail' reservation.ticket.pk %}" class="btn btn-outline-success btn-sm mt-2">
+                        <i class="fas fa-eye me-1"></i>Voir le ticket
+                    </a>
+                </div>
+            </div>
+        {% else %}
+            <div class="card border-warning">
+                <div class="card-body text-center">
+                    <i class="fas fa-clock fa-2x text-warning mb-2"></i>
+                    <h6>Ticket en préparation</h6>
+                    <p class="small text-muted">Votre ticket sera généré une fois la réservation confirmée.</p>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Breadcrumb -->
+<nav aria-label="breadcrumb" class="mt-4">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item">
+            <a href="{% url 'home' %}" class="text-decoration-none">
+                <i class="fas fa-home me-1"></i>Accueil
+            </a>
+        </li>
+        <li class="breadcrumb-item">
+            <a href="{% url 'reservations:reservation-list' %}" class="text-decoration-none">
+                Mes réservations
+            </a>
+        </li>
+        <li class="breadcrumb-item active">#{{ reservation.pk|stringformat:"06d" }}</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.breadcrumb {
+    background-color: transparent;
+    padding: 0;
+}
+
+.breadcrumb-item + .breadcrumb-item::before {
+    content: ">";
+    color: #6c757d;
+}
+</style>
+{% endblock %}

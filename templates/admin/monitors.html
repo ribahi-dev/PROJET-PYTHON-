@@ -1,0 +1,229 @@
+{% extends 'admin/base.html' %}
+
+{% block title %}Gestion des Moniteurs - Administration ÉquiClub{% endblock %}
+
+{% block page_title %}Gestion des Moniteurs{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="table-container fade-in-up">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h5>
+                    <i class="fas fa-user-tie text-primary"></i>
+                    Liste des Moniteurs
+                </h5>
+                <button class="btn btn-primary-custom" data-bs-toggle="modal" data-bs-target="#addMonitorModal">
+                    <i class="fas fa-plus"></i> Ajouter un Moniteur
+                </button>
+            </div>
+            
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Moniteur</th>
+                            <th>Email</th>
+                            <th>Spécialités</th>
+                            <th>Activités Assignées</th>
+                            <th>Date d'inscription</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for moniteur in moniteurs %}
+                        <tr>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div class="user-avatar me-3" style="width: 40px; height: 40px; background: linear-gradient(135deg, #667eea, #764ba2);">
+                                        {{ moniteur.username|first|upper }}
+                                    </div>
+                                    <div>
+                                        <strong>{{ moniteur.get_full_name|default:moniteur.username }}</strong>
+                                        <br>
+                                        <small class="text-muted">@{{ moniteur.username }}</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>{{ moniteur.email }}</td>
+                            <td>
+                                <span class="badge bg-info me-1">Équitation</span>
+                                <span class="badge bg-warning me-1">Dressage</span>
+                                <span class="badge bg-success">Balades</span>
+                            </td>
+                            <td>
+                                <span class="badge bg-primary">3 activités</span>
+                            </td>
+                            <td>{{ moniteur.date_joined|date:"d/m/Y" }}</td>
+                            <td>
+                                <div class="btn-group" role="group">
+                                    <button class="btn btn-sm btn-outline-info" title="Voir profil">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-warning" title="Modifier">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-success" title="Assigner activités">
+                                        <i class="fas fa-calendar-plus"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-danger" title="Supprimer">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center text-muted py-4">
+                                <i class="fas fa-user-tie fa-3x mb-3"></i>
+                                <p>Aucun moniteur trouvé</p>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Ajouter Moniteur -->
+<div class="modal fade" id="addMonitorModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-user-plus text-primary"></i>
+                    Ajouter un Moniteur
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form>
+                    <div class="mb-3">
+                        <label class="form-label">Nom d'utilisateur</label>
+                        <input type="text" class="form-control" placeholder="Nom d'utilisateur">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Email</label>
+                        <input type="email" class="form-control" placeholder="email@example.com">
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Prénom</label>
+                            <input type="text" class="form-control" placeholder="Prénom">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Nom</label>
+                            <input type="text" class="form-control" placeholder="Nom">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Mot de passe</label>
+                        <input type="password" class="form-control" placeholder="Mot de passe">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Spécialités</label>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="equitation">
+                            <label class="form-check-label" for="equitation">
+                                Équitation classique
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="dressage">
+                            <label class="form-check-label" for="dressage">
+                                Dressage
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="balades">
+                            <label class="form-check-label" for="balades">
+                                Balades en nature
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="poney">
+                            <label class="form-check-label" for="poney">
+                                Poney Club
+                            </label>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <button type="button" class="btn btn-primary-custom">Ajouter le moniteur</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Assigner Activités -->
+<div class="modal fade" id="assignActivitiesModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-calendar-plus text-primary"></i>
+                    Assigner des Activités
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form>
+                    <div class="mb-3">
+                        <label class="form-label">Sélectionner les activités à assigner</label>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="act1">
+                                    <label class="form-check-label" for="act1">
+                                        Cours d'équitation débutant
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="act2">
+                                    <label class="form-check-label" for="act2">
+                                        Cours d'équitation avancé
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="act3">
+                                    <label class="form-check-label" for="act3">
+                                        Balade en forêt
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="act4">
+                                    <label class="form-check-label" for="act4">
+                                        Stage de dressage
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="act5">
+                                    <label class="form-check-label" for="act5">
+                                    Poney Club enfants
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="act6">
+                                    <label class="form-check-label" for="act6">
+                                        Balade en mer
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <button type="button" class="btn btn-primary-custom">Assigner les activités</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,284 @@
+<!-- User Edit Modal -->
+<div class="modal fade" id="userEditModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-warning text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-edit"></i>
+                    Modifier l'Utilisateur #<span id="edit-user-id"></span>
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Loading state -->
+                <div id="edit-loading" class="text-center py-4" style="display: none;">
+                    <div class="spinner-border text-warning" role="status">
+                        <span class="visually-hidden">Chargement...</span>
+                    </div>
+                    <p class="mt-2">Chargement du formulaire...</p>
+                </div>
+
+                <!-- Error state -->
+                <div id="edit-error" class="alert alert-danger" style="display: none;">
+                    <strong>Erreur:</strong> <span id="edit-error-message"></span>
+                </div>
+
+                <!-- Edit form -->
+                <div id="edit-form" style="display: none;">
+                    <form id="user-edit-form">
+                        {% csrf_token %}
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Nom d'utilisateur</label>
+                                    <input type="text" class="form-control" id="edit-username" readonly>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Email</label>
+                                    <input type="email" class="form-control" id="edit-email" readonly>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Prénom</label>
+                                    <input type="text" class="form-control" id="edit-first-name">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Nom</label>
+                                    <input type="text" class="form-control" id="edit-last-name">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Rôle</label>
+                                    <select class="form-select" id="edit-role">
+                                        <option value="client">Client</option>
+                                        <option value="moniteur">Moniteur</option>
+                                        <option value="admin">Admin</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <div class="form-check">
+                                        <input type="checkbox" class="form-check-input" id="edit-is-active">
+                                        <label class="form-check-label" for="edit-is-active">
+                                            Compte actif
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Enregistrer
+                            </button>
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                Annuler
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    Fermer
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Print Styles -->
+<style>
+@media print {
+    body * {
+        visibility: hidden;
+    }
+    #userEditModal, #userEditModal * {
+        visibility: visible;
+    }
+    #userEditModal {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+    }
+    .modal-footer {
+        display: none !important;
+    }
+    .btn-close {
+        display: none !important;
+    }
+}
+</style>
+
+<script>
+let currentEditUserId = null;
+let currentUserEditModal = null;
+
+// Function to open user edit modal
+function openUserEditModal(userId) {
+    console.log('=== OPENING USER EDIT MODAL ===');
+    console.log('User ID:', userId);
+    
+    currentEditUserId = userId;
+    
+    // Get modal element
+    const modalElement = document.getElementById('userEditModal');
+    if (!modalElement) {
+        console.error('Modal element not found!');
+        return;
+    }
+    
+    // Show loading state
+    document.getElementById('edit-loading').style.display = 'block';
+    document.getElementById('edit-error').style.display = 'none';
+    document.getElementById('edit-form').style.display = 'none';
+    
+    console.log('Loading user edit form...');
+    
+    // Fetch user details from API
+    console.log('Fetching from API:', `/api/users/${userId}/`);
+    
+    fetch(`/api/users/${userId}/`)
+        .then(response => {
+            console.log('API Response status:', response.status);
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log('=== USER EDIT DATA RECEIVED ===');
+            console.log('Full data object:', data);
+            
+            // Hide loading state
+            document.getElementById('edit-loading').style.display = 'none';
+            
+            // Check if data is valid
+            if (!data || typeof data !== 'object') {
+                throw new Error('Invalid data received from API');
+            }
+            
+            // Show edit form
+            document.getElementById('edit-form').style.display = 'block';
+            
+            // Populate form with user data
+            console.log('Populating edit form...');
+            
+            document.getElementById('edit-user-id').textContent = data.id || 'N/A';
+            document.getElementById('edit-username').value = data.username || '';
+            document.getElementById('edit-email').value = data.email || '';
+            document.getElementById('edit-first-name').value = data.first_name || '';
+            document.getElementById('edit-last-name').value = data.last_name || '';
+            document.getElementById('edit-role').value = data.role || 'client';
+            document.getElementById('edit-is-active').checked = data.is_active || false;
+            
+            console.log('Edit form populated successfully');
+            
+            // Show modal
+            try {
+                currentUserEditModal = new bootstrap.Modal(modalElement);
+                currentUserEditModal.show();
+                console.log('User edit modal shown successfully');
+            } catch (modalError) {
+                console.error('Error showing user edit modal:', modalError);
+                showEditError('Erreur lors de l\'ouverture de la modal: ' + modalError.message);
+            }
+        })
+        .catch(error => {
+            console.error('=== API ERROR ===');
+            console.error('Error details:', error);
+            
+            // Hide loading state
+            document.getElementById('edit-loading').style.display = 'none';
+            
+            // Show error message
+            showEditError('Erreur lors du chargement du profil utilisateur: ' + error.message);
+        });
+}
+
+// Function to show error
+function showEditError(message) {
+    document.getElementById('edit-loading').style.display = 'none';
+    document.getElementById('edit-form').style.display = 'none';
+    document.getElementById('edit-error').style.display = 'block';
+    document.getElementById('edit-error-message').textContent = message;
+}
+
+// Function to save user
+function saveUser() {
+    console.log('=== SAVING USER ===');
+    
+    const userId = document.getElementById('edit-user-id').textContent;
+    const formData = {
+        first_name: document.getElementById('edit-first-name').value,
+        last_name: document.getElementById('edit-last-name').value,
+        email: document.getElementById('edit-email').value,
+        role: document.getElementById('edit-role').value,
+        is_active: document.getElementById('edit-is-active').checked
+    };
+    
+    console.log('Form data:', formData);
+    
+    fetch(`/api/users/${userId}/update/`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        },
+        body: JSON.stringify(formData)
+    })
+    .then(response => {
+        console.log('Save response status:', response.status);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        return response.json();
+    })
+    .then(data => {
+        console.log('User updated successfully:', data);
+        
+        if (data.message) {
+            alert(data.message);
+        }
+        
+        // Close modal
+        if (currentUserEditModal) {
+            currentUserEditModal.hide();
+        }
+        
+        // Reload page to show updated data
+        window.location.reload();
+    })
+    .catch(error => {
+        console.error('Error saving user:', error);
+        alert('Erreur lors de la mise à jour: ' + error.message);
+    });
+}
+
+// Add form submit event listener
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('=== USER EDIT MODAL INITIALIZED ===');
+    
+    const form = document.getElementById('user-edit-form');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            saveUser();
+        });
+    }
+});
+</script>

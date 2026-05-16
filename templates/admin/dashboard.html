@@ -1,0 +1,217 @@
+{% extends 'admin/base.html' %}
+
+{% block title %}Dashboard - Administration ÉquiClub{% endblock %}
+
+{% block page_title %}Tableau de Bord{% endblock %}
+
+{% block content %}
+<div class="row fade-in-up">
+    <!-- Statistiques Cards -->
+    <div class="col-xl-3 col-md-6 mb-4">
+        <a href="/admin/users/?role=client" style="text-decoration: none; color: inherit; cursor: pointer;">
+            <div class="stat-card primary" style="transition: all 0.3s ease;">
+                <div class="card-icon">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="stat-number">{{ total_clients }}</div>
+                <div class="stat-label">Clients</div>
+            </div>
+        </a>
+    </div>
+    
+    <div class="col-xl-3 col-md-6 mb-4">
+        <a href="/admin/moniteurs/" style="text-decoration: none; color: inherit; cursor: pointer;">
+            <div class="stat-card success" style="transition: all 0.3s ease;">
+                <div class="card-icon">
+                    <i class="fas fa-user-tie"></i>
+                </div>
+                <div class="stat-number">{{ total_moniteurs }}</div>
+                <div class="stat-label">Moniteurs</div>
+            </div>
+        </a>
+    </div>
+    
+    <div class="col-xl-3 col-md-6 mb-4">
+        <a href="/admin/reservations/" style="text-decoration: none; color: inherit; cursor: pointer;">
+            <div class="stat-card warning" style="transition: all 0.3s ease;">
+                <div class="card-icon">
+                    <i class="fas fa-calendar-check"></i>
+                </div>
+                <div class="stat-number">{{ total_reservations }}</div>
+                <div class="stat-label">Réservations</div>
+            </div>
+        </a>
+    </div>
+    
+    <div class="col-xl-3 col-md-6 mb-4">
+        <a href="/admin/statistics/" style="text-decoration: none; color: inherit; cursor: pointer;">
+            <div class="stat-card danger" style="transition: all 0.3s ease;">
+                <div class="card-icon">
+                    <i class="fas fa-euro-sign"></i>
+                </div>
+                <div class="stat-number">{{ revenus_estimes|floatformat:0 }} DH</div>
+                <div class="stat-label">Revenus Estimés</div>
+            </div>
+        </a>
+    </div>
+</div>
+
+<style>
+.stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+</style>
+
+<div class="row">
+    <!-- Activités Populaires -->
+    <div class="col-xl-8 mb-4">
+        <div class="table-container fade-in-up">
+            <h5 class="mb-4">
+                <i class="fas fa-star text-warning"></i>
+                Activités les Plus Réservées
+            </h5>
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Activité</th>
+                            <th>Catégorie</th>
+                            <th>Prix</th>
+                            <th>Réservations</th>
+                            <th>Taux Remplissage</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for activite in activites_populaires %}
+                        <tr>
+                            <td>
+                                <strong>{{ activite.nom }}</strong>
+                            </td>
+                            <td>
+                                <span class="badge bg-info">{{ activite.get_categorie_display }}</span>
+                            </td>
+                            <td>{{ activite.prix }} DH</td>
+                            <td>
+                                <span class="badge bg-primary">{{ activite.nb_reservations }}</span>
+                            </td>
+                            <td>
+                                {% widthratio activite.nb_reservations activite.places_max 100 as taux %}
+                                <div class="progress" style="height: 20px;">
+                                    <div class="progress-bar" role="progressbar" 
+                                         style="width: {{ taux|floatformat:0 }}%"
+                                         aria-valuenow="{{ taux|floatformat:0 }}" 
+                                         aria-valuemin="0" aria-valuemax="100">
+                                        {{ taux|floatformat:0 }}%
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center text-muted">
+                                Aucune activité trouvée
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Réservations Récentes -->
+    <div class="col-xl-4 mb-4">
+        <div class="table-container fade-in-up">
+            <h5 class="mb-4">
+                <i class="fas fa-clock text-primary"></i>
+                Réservations Récentes
+            </h5>
+            <div class="recent-activities">
+                {% for reservation in reservations_recentes %}
+                <div class="d-flex align-items-center mb-3 p-3 border rounded">
+                    <div class="flex-grow-1">
+                        <h6 class="mb-1">{{ reservation.user.username }}</h6>
+                        <small class="text-muted">{{ reservation.activite.nom }}</small>
+                    </div>
+                    <div class="text-end">
+                        <small class="text-muted">{{ reservation.created_at|date:"d/m H:i" }}</small>
+                        <br>
+                        <strong>{{ reservation.activite.prix }} DH</strong>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="text-center text-muted py-4">
+                    Aucune réservation récente
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Graphique des revenus -->
+<div class="row">
+    <div class="col-12 mb-4">
+        <div class="table-container fade-in-up">
+            <h5 class="mb-4">
+                <i class="fas fa-chart-line text-success"></i>
+                Vue d'ensemble
+            </h5>
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="text-center p-3">
+                        <i class="fas fa-running fa-3x text-primary mb-3"></i>
+                        <h4>{{ total_activites }}</h4>
+                        <p class="text-muted mb-0">Activités Total</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="text-center p-3">
+                        <i class="fas fa-ticket-alt fa-3x text-success mb-3"></i>
+                        <h4>{{ total_reservations }}</h4>
+                        <p class="text-muted mb-0">Réservations Total</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="text-center p-3">
+                        <i class="fas fa-euro-sign fa-3x text-warning mb-3"></i>
+                        <h4>{{ revenus_estimes|floatformat:0 }} DH</h4>
+                        <p class="text-muted mb-0">Revenus Estimés</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Animation des nombres
+    const statNumbers = document.querySelectorAll('.stat-number');
+    statNumbers.forEach(element => {
+        const finalValue = element.textContent;
+        const isPrice = finalValue.includes('DH');
+        const numericValue = parseInt(finalValue.replace(/[^0-9]/g, ''));
+        let currentValue = 0;
+        const increment = numericValue / 50;
+        
+        const timer = setInterval(() => {
+            currentValue += increment;
+            if (currentValue >= numericValue) {
+                currentValue = numericValue;
+                clearInterval(timer);
+            }
+            
+            if (isPrice) {
+                element.textContent = 'DH ' + Math.floor(currentValue).toLocaleString();
+            } else {
+                element.textContent = Math.floor(currentValue).toLocaleString();
+            }
+        }, 20);
+    });
+});
+</script>
+{% endblock %}

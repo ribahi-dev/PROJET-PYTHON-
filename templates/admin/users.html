@@ -1,0 +1,185 @@
+{% extends 'admin/base.html' %}
+
+{% block title %}Gestion des Utilisateurs - Administration ÉquiClub{% endblock %}
+
+{% block page_title %}Gestion des Utilisateurs{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="table-container fade-in-up">
+            <!-- Include user modals -->
+            {% include 'admin/user_profile_modal.html' %}
+            {% include 'admin/user_edit_modal.html' %}
+            <!-- Recherche -->
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <h5>
+                        <i class="fas fa-users text-primary"></i>
+                        Liste des Utilisateurs
+                    </h5>
+                </div>
+                <div class="col-md-6">
+                    <form method="get" class="d-flex">
+                        <input type="text" name="search" class="form-control me-2" 
+                               placeholder="Rechercher un utilisateur..." 
+                               value="{{ request.GET.search }}">
+                        <button type="submit" class="btn btn-primary-custom">
+                            <i class="fas fa-search"></i> Rechercher
+                        </button>
+                    </form>
+                </div>
+            </div>
+            
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Utilisateur</th>
+                            <th>Email</th>
+                            <th>Rôle</th>
+                            <th>Date d'inscription</th>
+                            <th>Statut</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in users %}
+                        <tr>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div class="user-avatar me-3" style="width: 40px; height: 40px;">
+                                        {{ user.username|first|upper }}
+                                    </div>
+                                    <div>
+                                        <strong>{{ user.get_full_name|default:user.username }}</strong>
+                                        <br>
+                                        <small class="text-muted">@{{ user.username }}</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>{{ user.email }}</td>
+                            <td>
+                                {% if user.role == 'admin' %}
+                                    <span class="badge bg-danger">
+                                        <i class="fas fa-crown"></i> Administrateur
+                                    </span>
+                                {% elif user.role == 'moniteur' %}
+                                    <span class="badge bg-primary">
+                                        <i class="fas fa-user-tie"></i> Moniteur
+                                    </span>
+                                {% else %}
+                                    <span class="badge bg-success">
+                                        <i class="fas fa-user"></i> Client
+                                    </span>
+                                {% endif %}
+                            </td>
+                            <td>{{ user.date_joined|date:"d/m/Y" }}</td>
+                            <td>
+                                {% if user.is_active %}
+                                    <span class="badge bg-success">Actif</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">Inactif</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="btn-group" role="group">
+                                    <a href="#" 
+                                       class="btn btn-sm btn-outline-info" 
+                                       title="Voir profil"
+                                       data-user-id="{{ user.id }}"
+                                       onclick="openUserProfileModal('{{ user.id }}'); return false;">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a href="#" 
+                                       class="btn btn-sm btn-outline-warning" 
+                                       title="Modifier"
+                                       data-user-id="{{ user.id }}"
+                                       onclick="openUserEditModal('{{ user.id }}'); return false;">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    {% if user.role != 'admin' %}
+                                    <button class="btn btn-sm btn-outline-danger" 
+                                            onclick="supprimerUtilisateur('{{ user.id }}')" 
+                                            title="Supprimer">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center text-muted py-4">
+                                <i class="fas fa-inbox fa-3x mb-3"></i>
+                                <p>Aucun utilisateur trouvé</p>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Ajouter Moniteur -->
+<div class="modal fade" id="addMonitorModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-user-plus text-primary"></i>
+                    Ajouter un Moniteur
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form>
+                    <div class="mb-3">
+                        <label class="form-label">Nom d'utilisateur</label>
+                        <input type="text" class="form-control" placeholder="Nom d'utilisateur">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Email</label>
+                        <input type="email" class="form-control" placeholder="email@example.com">
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Prénom</label>
+                            <input type="text" class="form-control" placeholder="Prénom">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Nom</label>
+                            <input type="text" class="form-control" placeholder="Nom">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Mot de passe</label>
+                        <input type="password" class="form-control" placeholder="Mot de passe">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Confirmer le mot de passe</label>
+                        <input type="password" class="form-control" placeholder="Confirmer le mot de passe">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <button type="button" class="btn btn-primary-custom">Ajouter le moniteur</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function supprimerUtilisateur(userId) {
+    if (confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ? Cette action est irréversible.')) {
+        // Logique de suppression
+        alert('Utilisateur supprimé avec succès');
+    }
+}
+</script>
+{% endblock %}
