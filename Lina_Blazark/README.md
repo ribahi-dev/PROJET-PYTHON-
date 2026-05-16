@@ -1,10 +1,12 @@
 Bienvenue dans le dossier de Lina Blazark.
 
-Structure:
+Structure requise :
+
 - Projet/
 - Rapport/
 - Presentation/
+- README.md
 
-Ajoutez ici vos fichiers (code, rapports, présentations, images, etc.).
+Ajoutez vos fichiers (code, PDF, PowerPoint, images, ZIP) dans les sous-dossiers.
 
-Respectez les consignes du dépôt et ne modifiez pas les dossiers des autres.
+Ne modifiez pas les dossiers des autres étudiants.
