@@ -1,0 +1,447 @@
+/* Blogora Global Styles */
+
+:root {
+  --brand-primary: #2563eb;
+  --brand-primary-dark: #1d4ed8;
+  --brand-accent: #f59e0b;
+  --surface: #ffffff;
+  --surface-alt: #f8fafc;
+  --border: #e2e8f0;
+  --text-primary: #0f172a;
+  --text-secondary: #64748b;
+  --text-muted: #94a3b8;
+  --radius-sm: 6px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
+  --shadow-md: 0 4px 16px rgba(0,0,0,0.08);
+  --shadow-lg: 0 8px 32px rgba(0,0,0,0.12);
+  --font-sans: 'Inter', system-ui, sans-serif;
+  --font-serif: 'Playfair Display', Georgia, serif;
+}
+
+/* Import Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap');
+
+/* Base styles */
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  min-height: 100%;
+  background: var(--surface);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  line-height: 1.7;
+}
+
+::selection {
+  background: rgba(37, 99, 235, 0.1);
+}
+
+/* Utility */
+.text-brand {
+  color: var(--brand-primary) !important;
+}
+
+/* Navbar improvements */
+.navbar {
+  background: var(--surface) !important;
+  border-bottom: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+}
+
+.navbar-brand {
+  color: var(--text-primary) !important;
+  font-weight: 700;
+  font-size: 1.25rem;
+}
+
+.navbar-logo {
+  border-radius: 12px;
+  object-fit: cover;
+  max-width: 70px;
+  height: auto;
+}
+
+.navbar-nav .nav-link {
+  color: var(--text-secondary) !important;
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
+
+.navbar-nav .nav-link:hover,
+.navbar-nav .nav-link.active {
+  color: var(--brand-primary) !important;
+}
+
+.navbar .dropdown-menu {
+  background: var(--surface);
+  border: 1px solid var(--border);
+}
+
+.navbar .dropdown-item {
+  color: var(--text-primary);
+}
+
+.navbar .dropdown-item:hover {
+  background: rgba(37, 99, 235, 0.1);
+}
+
+/* Global containers */
+.card,
+.modal-content,
+.dropdown-menu {
+  background: var(--surface);
+}
+
+.card {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+}
+
+.card-header,
+.card-footer {
+  background: var(--surface-alt);
+}
+
+.card-body,
+.dropdown-menu,
+.modal-content {
+  color: var(--text-primary);
+  background: var(--surface);
+}
+
+/* Buttons */
+.btn-primary {
+  background-color: var(--brand-primary);
+  border-color: var(--brand-primary);
+  color: #fff;
+}
+
+.btn-primary:hover,
+.btn-primary:focus {
+  background-color: var(--brand-primary-dark);
+  border-color: var(--brand-primary-dark);
+}
+
+.btn-outline-primary {
+  color: var(--brand-primary);
+  border-color: var(--brand-primary);
+}
+
+.btn-outline-primary:hover,
+.btn-outline-primary:focus {
+  background-color: rgba(37, 99, 235, 0.1);
+  border-color: var(--brand-primary);
+}
+
+.btn-outline-secondary {
+  color: var(--text-secondary);
+  border-color: var(--border);
+}
+
+.btn-outline-secondary:hover,
+.btn-outline-secondary:focus {
+  background-color: var(--surface-alt);
+}
+
+.btn-danger {
+  background-color: #de4b6f;
+  border-color: #de4b6f;
+}
+
+.btn-danger:hover {
+  background-color: #c33c60;
+  border-color: #c33c60;
+}
+
+/* Form controls */
+.form-control,
+.form-select,
+textarea {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+}
+
+.form-control:focus,
+.form-select:focus,
+textarea:focus {
+  background: var(--surface);
+  border-color: var(--brand-primary);
+  box-shadow: 0 0 0 0.2rem rgba(37, 99, 235, 0.1);
+}
+
+.form-label,
+.form-text,
+.text-muted {
+  color: var(--text-muted) !important;
+}
+
+/* Article cards */
+.article-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+}
+
+.article-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-md);
+}
+
+.article-card .title {
+  color: var(--text-primary);
+}
+
+.article-card .excerpt {
+  color: var(--text-secondary);
+}
+
+/* Comments */
+.comment .card,
+.comments-section .card,
+.comment .replies .card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+}
+
+.comment .card-body,
+.comment .replies {
+  color: var(--text-primary);
+}
+
+.comment .badge {
+  background: rgba(37, 99, 235, 0.1);
+  color: var(--brand-primary);
+}
+
+.comment-content p {
+  color: var(--text-secondary);
+}
+
+/* Footer */
+footer {
+  background: var(--surface-alt);
+  color: var(--text-secondary);
+  border-top: 1px solid var(--border);
+}
+
+footer a {
+  color: var(--text-secondary);
+}
+
+footer a:hover {
+  color: var(--brand-primary);
+}
+
+.footer-logo {
+  border-radius: 12px;
+  object-fit: cover;
+}
+
+/* Badges */
+.badge {
+  border-radius: 9999px;
+  font-weight: 600;
+}
+
+.badge.bg-secondary,
+.badge.bg-primary,
+.badge.bg-info {
+  background-color: rgba(37, 99, 235, 0.1) !important;
+  color: var(--brand-primary) !important;
+}
+
+/* Background Colors for Cards and Stat Cards */
+.bg-primary {
+  background-color: #2563eb !important;
+}
+
+.bg-success {
+  background-color: #16a34a !important;
+}
+
+.bg-warning {
+  background-color: #ea580c !important;
+}
+
+.bg-info {
+  background-color: #0891b2 !important;
+}
+
+.bg-danger {
+  background-color: #dc2626 !important;
+}
+
+.bg-light {
+  background-color: #f8fafc !important;
+}
+
+.bg-dark {
+  background-color: #0f172a !important;
+}
+
+.bg-secondary {
+  background-color: #64748b !important;
+}
+
+/* Ensure colored cards display properly */
+.card.bg-primary .card-body,
+.card.bg-success .card-body,
+.card.bg-warning .card-body,
+.card.bg-info .card-body,
+.card.bg-danger .card-body {
+  background: transparent;
+  color: white;
+}
+
+/* Utility */
+.text-muted {
+  color: var(--text-muted) !important;
+}
+
+.mt-5 {
+  margin-top: 3rem !important;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(18px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.card,
+.article-card,
+.comment .card {
+  animation: fadeIn 0.45s ease-out;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .hero-section {
+    padding: 2rem 1rem !important;
+  }
+  .hero-section .display-4 {
+    font-size: 2rem;
+  }
+  .card-img-top {
+    height: 150px;
+  }
+}
+
+/* Loading states */
+.loading {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--surface-alt);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--brand-primary);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--brand-primary-dark);
+}
+  transform: scale(1.05);
+}
+
+.transition-all {
+  transition: all 0.3s ease;
+}
+
+/* Improved card layout */
+.card {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: var(--surface);
+}
+
+.card-img-container {
+  position: relative;
+  overflow: hidden;
+}
+
+.card-img-container img {
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Typography improvements */
+.card-title a {
+  transition: color 0.2s ease;
+}
+
+.card-title a:hover {
+  color: var(--brand-primary) !important;
+}
+
+/* Responsive improvements */
+@media (max-width: 768px) {
+  .card-img-container {
+    height: 150px !important;
+  }
+  
+  .card-body {
+    padding: 1rem !important;
+  }
+  
+  .card-title {
+    font-size: 1.1rem !important;
+  }
+}
+
+/* Pagination improvements */
+.pagination .page-link {
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  transition: all 0.2s ease;
+}
+
+.pagination .page-link:hover {
+  background-color: var(--surface-alt);
+  border-color: var(--brand-primary);
+  color: var(--brand-primary);
+}
+
+.pagination .page-item.active .page-link {
+  background-color: var(--brand-primary);
+  border-color: var(--brand-primary);
+}
+
+.pagination .page-item.disabled .page-link {
+  background-color: var(--surface-alt);
+  color: var(--text-muted);
+}
+
+/* Link improvements */
+.link-primary:hover {
+  color: var(--brand-primary) !important;
+}
+
+/* Badge improvements */
+.badge {
+  font-weight: 500;
+  font-size: 0.75rem;
+  padding: 0.375rem 0.625rem;
+  border-radius: 0.375rem;
+}
+
+/* Responsive grid improvements */
+@media (max-width: 576px) {
+  .row.g-4 > * {
+    padding-bottom: 1.5rem !important;
+  }
+}

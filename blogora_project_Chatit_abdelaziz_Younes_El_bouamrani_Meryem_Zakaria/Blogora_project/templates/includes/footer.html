@@ -1,0 +1,34 @@
+<footer class="bg-dark text-light py-4 mt-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-4">
+                <div class="d-flex align-items-center mb-3">
+                    <img src="/media/logo.jpeg" alt="Blogora logo" class="footer-logo me-2" width="40" height="40" />
+                    <h5 class="mb-0">Blogora</h5>
+                </div>
+                <p class="text-muted">Blog intelligent propulsé par l'intelligence artificielle pour des recommandations
+                    personnalisées.</p>
+            </div>
+            <div class="col-md-4">
+                <h5>Liens rapides</h5>
+                <ul class="list-unstyled">
+                    <li><a href="/" class="text-light text-decoration-none">Accueil</a></li>
+                    <li><a href="/articles/" class="text-light text-decoration-none">Articles</a>
+                    </li>
+                    {% if user.is_authenticated %}
+                    <li><a href="{% url 'users:profile' %}" class="text-light text-decoration-none">Profil</a></li>
+                    {% endif %}
+                </ul>
+            </div>
+            <div class="col-md-4">
+                <h5>À propos</h5>
+                <p class="text-muted">Système de recommandation basé sur le machine learning pour une expérience de
+                    lecture personnalisée.</p>
+            </div>
+        </div>
+        <hr class="bg-light">
+        <div class="text-center">
+            <p class="mb-0">&copy; {% now "Y" %} Blogora. Tous droits réservés.</p>
+        </div>
+    </div>
+</footer>
