@@ -1,0 +1,26 @@
+# Django core
+Django==5.2.13
+djangorestframework==3.14.0
+django-cors-headers==4.3.1
+djangorestframework-simplejwt==5.3.1
+
+# Database
+mysqlclient==2.2.4
+
+# Chatbot
+google-generativeai==0.8.6
+
+# Background tasks and cache
+celery==5.3.6
+redis==5.0.1
+django-redis==5.4.0
+
+# PDF export and media
+openpyxl==3.1.5
+reportlab==4.2.5
+weasyprint==60.2
+Pillow==10.2.0
+
+# Utilities
+python-decouple==3.8
+python-dotenv==1.0.1

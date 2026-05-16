@@ -1,0 +1,67 @@
+# ═══════════════════════════════════════════════════════════
+# IDEALAB — .GITIGNORE
+# ═══════════════════════════════════════════════════════════
+
+# ── Python ─────────────────────────────────────────────────
+*.py[cod]
+*$py.class
+*.so
+.Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# ── Virtual Environment ────────────────────────────────────
+venv/
+env/
+ENV/
+.venv
+
+# ── Django ─────────────────────────────────────────────────
+*.log
+db.sqlite3
+db.sqlite3-journal
+/media/
+/staticfiles/
+/static/
+
+# ── Environment Variables ──────────────────────────────────
+.env
+.env.local
+.env.*.local
+
+# ── IDE ────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# ── Tests ──────────────────────────────────────────────────
+.pytest_cache/
+.coverage
+htmlcov/
+*.cover
+.hypothesis/
+
+# ── Celery ─────────────────────────────────────────────────
+celerybeat-schedule
+celerybeat.pid
+
+# ── Exports ────────────────────────────────────────────────
+/media/exports/
+
+# ── Migrations (optionnel, décommenter si nécessaire) ──────
+# */migrations/*.py
+# !*/migrations/__init__.py
+
+# ── Backup ─────────────────────────────────────────────────
+*.bak
+*.backup
+*.sql
+
+# ── OS ─────────────────────────────────────────────────────
+Thumbs.db
+.DS_Store
